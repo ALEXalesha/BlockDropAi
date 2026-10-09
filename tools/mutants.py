@@ -75,3 +75,12 @@ MUTANTS += [
     ("cem: снимок без поколения", C, "        self.gen = snap[\"gen\"]\n", "", TC),
     ("cem: работник в 8 потоков", C, "        os.environ[var] = \"1\"", "        os.environ[var] = \"8\"", TC),
 ]
+TDF = "game/train/td.py"
+TT = "tests/test_td.py"
+MUTANTS += [
+    ("td: цель без награды", TDF, "target = r + self.gamma * np.where(done, 0.0, self.net.predict(xn))",
+     "target = self.gamma * np.where(done, 0.0, self.net.predict(xn))", TT),
+    ("td: ход по худшему", TDF, "else int(np.argmax(q))", "else int(np.argmin(q))", TT),
+    ("td: шаг обучения не делается", TDF, "            self.adam.step()\n", "", TT),
+    ("td: снимок без Adam", TDF, "        self.adam.t = meta[\"adam_t\"]\n", "", TT),
+]

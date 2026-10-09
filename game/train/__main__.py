@@ -3,6 +3,8 @@
     python -m game.train cem --trial                 # два поколения во временной папке и прогноз
     python -m game.train cem --gens 30 --workers 6   # обучение весов (runs/cem)
     python -m game.train cem --gens 40 --resume      # продолжить со снимка
+    python -m game.train td --trial                  # пробный круг сети TD и прогноз
+    python -m game.train td --rounds 60 --minutes 60 # сеть оценки TD (runs/td), один поток
 
 Потоки ограничены: каждый работник считает в одном потоке BLAS, работников не больше
 половины ядер (по умолчанию 6). Журнал и снимок - в --run.
@@ -78,13 +80,63 @@ def run_cem(a):
     return 0
 
 
+def td_args(sub):
+    p = sub.add_parser("td", help="сеть оценки, TD в игре с собой (один процесс)")
+    p.add_argument("--run", default=os.path.join("runs", "td"))
+    p.add_argument("--rounds", type=int, default=60)
+    p.add_argument("--games", type=int, default=20, help="партий за круг")
+    p.add_argument("--minutes", type=float, default=0, help="остановиться после стольких минут")
+    p.add_argument("--ceiling", type=int, default=12)
+    p.add_argument("--max-lines", type=int, default=5000)
+    p.add_argument("--eval-games", type=int, default=10)
+    p.add_argument("--eval-max-lines", type=int, default=20000)
+    p.add_argument("--hidden", type=int, default=32)
+    p.add_argument("--lr", type=float, default=1e-3)
+    p.add_argument("--gamma", type=float, default=0.99)
+    p.add_argument("--eps", type=float, default=0.05)
+    p.add_argument("--seed", type=int, default=1)
+    p.add_argument("--resume", action="store_true")
+    p.add_argument("--trial", action="store_true", help="один круг и прогноз времени")
+
+
+def run_td(a):
+    from game.train.td import Trainer
+    kw = dict(ceiling=a.ceiling, max_lines=a.max_lines, eval_games=a.eval_games,
+              eval_max_lines=a.eval_max_lines, hidden=a.hidden, lr=a.lr, gamma=a.gamma, eps=a.eps,
+              seed=a.seed, echo=True)
+    if a.trial:
+        run = tempfile.mkdtemp(prefix="blockdrop-td-trial-")
+        t = Trainer(run, **kw)
+        r = t.round(games=a.games)
+        # худший случай: каждая партия обучения и проверки - до предела линий
+        steps_per_sec = max(r["steps"], 1) / r["seconds"]
+        worst_round = (a.games * a.max_lines + a.eval_games * a.eval_max_lines) * PIECES_PER_LINE / steps_per_sec
+        print(json.dumps({"trial_dir": run, "round": r, "steps_per_sec": round(steps_per_sec),
+                          "worst_round_seconds": round(worst_round),
+                          "worst_total_hours": round(worst_round * a.rounds / 3600, 2)},
+                         ensure_ascii=False))
+        return 0
+    t = Trainer(a.run, **kw)
+    if a.resume and t.load_snapshot():
+        print(f"продолжаю с круга {t.rounds}", flush=True)
+    started = time.time()
+    while t.rounds < a.rounds:
+        t.round(games=a.games)
+        if a.minutes and time.time() - started > a.minutes * 60:
+            print(f"время вышло: {a.minutes} мин", flush=True)
+            break
+    t.net.save(os.path.join(a.run, "td-value.npz"))
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="python -m game.train")
     sub = ap.add_subparsers(dest="cmd", required=True)
     cem_args(sub)
+    td_args(sub)
     a = ap.parse_args(argv)
     started = time.time()
-    code = {"cem": run_cem}[a.cmd](a)
+    code = {"cem": run_cem, "td": run_td}[a.cmd](a)
     print(f"готово за {time.time() - started:.0f} с", flush=True)
     return code
 

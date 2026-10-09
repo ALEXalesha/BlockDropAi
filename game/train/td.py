@@ -1,8 +1,9 @@
 """Обучение сети оценки TD(0) в игре с собой (второй вариант ИИ, spec §3).
 
-Ценность состояния после хода V(s) - сколько линий ещё будет. Ход выбирается по
-линии сейчас + V(после хода), иногда случайно (eps). Для пары соседних ходов
-цель V(s) = r' + gamma * V(s'), в конце партии - 0. Переходы копятся в буфере, сеть
+Ценность состояния после хода V(s) - сумма будущих наград (net.reward: +1 за каждую
+поставленную фигуру и квадрат числа линий, DEATH за ход, после которого партия кончилась).
+Ход выбирается по награде сейчас + V(после хода), иногда случайно (eps). Для пары
+соседних ходов цель V(s) = r' + gamma * V(s'), в конце партии - DEATH. Переходы копятся в буфере, сеть
 учится пачками (Adam). Условия те же, что у CEM: равновероятные фигуры, укороченное поле;
 проверка - на настоящем поле с мешком.
 
@@ -17,7 +18,7 @@ from aikit.nn.optim import Adam
 from aikit.trainlog import TrainLog, load_snapshot, save_snapshot
 from game.ai import features as F
 from game.ai import sim
-from game.ai.net import ValueNet, encode
+from game.ai.net import DEATH, ValueNet, encode, reward
 from game.core import blocks as B
 
 SNAPSHOT = "td.npz"
@@ -50,19 +51,19 @@ def play_net(net, seed, max_lines=10 ** 9, ceiling=None, bag=True, eps=0.0, rng=
         x, rest = (None, []) if B.spawn_state(board, kind) is None else candidates(board, kind, top, heights)
         if not rest:
             if record and prev is not None:
-                record(prev, 0.0, prev, True)
+                record(prev, DEATH, prev, True)
             break
-        q = np.array([r[1] for r in rest], np.float32) + net.predict(x)
+        q = np.array([reward(r[1]) for r in rest], np.float32) + net.predict(x)
         i = int(rng.integers(len(rest))) if eps and rng.random() < eps else int(np.argmax(q))
         board, n, top, heights = rest[i]
         if record and prev is not None:
-            record(prev, float(n), x[i], False)
+            record(prev, reward(n), x[i], False)
         prev = x[i]
         lines += n
         count += 1
         if ceiling is not None and top > ceiling:
             if record:
-                record(prev, 0.0, prev, True)
+                record(prev, DEATH, prev, True)
             break
     return {"lines": lines, "pieces": count}
 

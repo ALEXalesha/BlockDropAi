@@ -52,18 +52,19 @@ class Linear:
 
 
 class Net:
-    """Сеть оценки: значение = линии сейчас + V(после хода)."""
+    """Сеть оценки: значение = награда за ход + V(после хода) (game.ai.net.reward)."""
 
     def __init__(self, net):
         self.net = net
 
     def scores(self, vecs, heights):
-        from game.ai.net import encode
+        from game.ai.net import encode, reward
         v = self.net.predict(encode(vecs, heights))
-        return [float(a) + vec[10] for a, vec in zip(v, vecs)]
+        return [float(a) + reward(vec[10]) for a, vec in zip(v, vecs)]
 
     def carry(self, vec):
-        return float(vec[10])
+        from game.ai.net import reward
+        return reward(vec[10])
 
 
 class Agent:

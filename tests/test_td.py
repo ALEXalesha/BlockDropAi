@@ -2,7 +2,6 @@
 import os
 
 import numpy as np
-import pytest
 
 from aikit.nn.gradcheck import check_layer
 from game.ai import features as F
@@ -39,14 +38,14 @@ def test_save_load_roundtrip(tmp_path):
     assert np.allclose(net.predict(x), other.predict(x))
 
 
-@pytest.mark.skip(reason="настройки TD ещё подбираются: за 6 малых кругов 0 -> 5.8 линий, нужно больше")
 def test_td_learning_beats_untrained_net(tmp_path):
-    t = td.Trainer(str(tmp_path / "td"), **SMALL)
+    # зёрна те же - прогон тот же: необученная сеть 0 линий, после 20 малых кругов ~118
+    t = td.Trainer(str(tmp_path / "td"), **{**SMALL, "steps_per_update": 100})
     before = t.evaluate()
-    for _ in range(6):
-        t.round(games=8)
+    for _ in range(20):
+        t.round(games=10)
     after = t.evaluate()
-    assert after > before * 1.5 and after > 10, (before, after)
+    assert after > before + 50, (before, after)
 
 
 def test_snapshot_resume(tmp_path):
@@ -55,6 +54,8 @@ def test_snapshot_resume(tmp_path):
     b = td.Trainer(str(tmp_path / "a"), **SMALL)
     assert b.load_snapshot()
     assert b.rounds == 1 and b.steps == a.steps
+    assert b.adam.t == a.adam.t > 0
+    assert all(np.array_equal(m1, m2) for m1, m2 in zip(a.adam.m, b.adam.m))
     x = np.random.default_rng(1).normal(size=(4, N.INPUTS)).astype(np.float32)
     assert np.allclose(a.net.predict(x), b.net.predict(x))
     assert os.path.exists(os.path.join(str(tmp_path / "a"), "train.log"))
