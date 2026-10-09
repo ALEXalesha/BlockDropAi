@@ -52,3 +52,26 @@ MUTANTS += [
      "return (rot,) + tuple((y + dy, m) for dy, m in B.MASKS[kind][rot][x + 3])", TM),
     ("moves: путь без сдвигов", MV, "rot_path + shifts + (\"hd\",)", "rot_path + (\"hd\",)", TM),
 ]
+FT = "game/ai/features.py"
+TF = "tests/test_features.py"
+MUTANTS += [
+    ("features: дыры без накрытия", FT, "        h = covered & ~row\n", "        h = ~row & FULL & covered >> 1\n", TF),
+    ("features: колодец и под накрытием", FT, "& FULL & ~covered", "& FULL", TF),
+    ("features: глубина колодца не растёт", FT, "            c1, carry = c1 ^ carry, c1 & carry\n",
+     "            c1, carry = c1, 0\n", TF),
+    ("features: столбец над стопкой", FT, "    ct += prev.bit_count()              # над стопкой пусто\n", "", TF),
+    ("features: верх по фигуре", FT, "top = _top(after, min(max(hi + 1, top), B.HEIGHT))",
+     "top = _top(after, min(hi + 1, B.HEIGHT))", TF),
+    ("features: эрозия без линий", FT, "        eroded *= n\n", "", TF),
+    ("features: сброс по нижней клетке", FT, "                v = heights[col] - low\n",
+     "                v = heights[col] - low - 1\n", TF),
+]
+C = "game/train/cem.py"
+TC = "tests/test_cem.py"
+MUTANTS += [
+    ("cem: лучшие - худшие", C, "order = np.argsort(-fitness, kind=\"stable\")",
+     "order = np.argsort(fitness, kind=\"stable\")", TC),
+    ("cem: среднее не обновляется", C, "        self.mean = elite.mean(axis=0)\n", "", TC),
+    ("cem: снимок без поколения", C, "        self.gen = snap[\"gen\"]\n", "", TC),
+    ("cem: работник в 8 потоков", C, "        os.environ[var] = \"1\"", "        os.environ[var] = \"8\"", TC),
+]
