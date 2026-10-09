@@ -38,3 +38,17 @@ MUTANTS = [
      "if r >= HEIGHT or board[r] & mask:", TB),
     ("rules: мусор без дырки", E, "row = FULL & ~(1 << hole)", "row = FULL", TB),
 ]
+MV = "game/ai/moves.py"
+TM = "tests/test_moves.py"
+MUTANTS += [
+    ("moves: без поворота против часовой", MV, "for d, key in ((1, \"cw\"), (-1, \"ccw\")):",
+     "for d, key in ((1, \"cw\"),):", TM),
+    ("moves: небо до пола", MV, "down = bottom - sky if bottom > sky else 1", "down = y - fy", TM),
+    ("moves: без мягкого падения ниже неба", MV, "down = bottom - sky if bottom > sky else 1",
+     "down = bottom - sky if bottom > sky else 0", TM),
+    ("moves: сброс без сдвига вправо", MV, "for step, key in ((0, None), (-1, \"L\"), (1, \"R\")):",
+     "for step, key in ((0, None), (-1, \"L\")):", TM),
+    ("moves: ключ по повороту", MV, "return tuple((y + dy, m) for dy, m in B.MASKS[kind][rot][x + 3])",
+     "return (rot,) + tuple((y + dy, m) for dy, m in B.MASKS[kind][rot][x + 3])", TM),
+    ("moves: путь без сдвигов", MV, "rot_path + shifts + (\"hd\",)", "rot_path + (\"hd\",)", TM),
+]

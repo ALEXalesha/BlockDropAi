@@ -19,7 +19,8 @@ def git(*args):
 
 
 def tracked_files():
-    out = git("ls-files")
+    # и новые файлы, ещё не добавленные в git: иначе проверка до коммита их не видит
+    out = git("ls-files", "--cached", "--others", "--exclude-standard")
     if not out:
         pytest.skip("нет git")
     return [f for f in out.splitlines() if not f.endswith((".npz", ".png", ".ico"))]
