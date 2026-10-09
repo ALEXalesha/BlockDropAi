@@ -98,9 +98,9 @@ def board_features(board):
     return [0.0, 0, rt, ct, holes, wells, hole_rows, bump, height, top, 0]
 
 
-def place(board, kind, rot, x, y, top=None):
-    """Поставить фигуру: (признаки, поле после хода, линий). top - высота стопки до хода,
-    если известна (иначе считается)."""
+def place_full(board, kind, rot, x, y, top=None):
+    """Поставить фигуру: (признаки, поле после хода, линий, высоты столбцов). top - высота
+    стопки до хода, если известна (иначе считается)."""
     masks = B.MASKS[kind][rot][x + 3]
     lo = y + masks[0][0]
     hi = y + masks[-1][0]
@@ -116,8 +116,15 @@ def place(board, kind, rot, x, y, top=None):
         top = _top(board)
     # верх стопки - выше фигуры или выше прежнего верха; линии могли его опустить
     top = _top(after, min(max(hi + 1, top), B.HEIGHT))
-    rt, ct, holes, wells, hole_rows, bump, height, top, _ = board_part(after, top)
-    return [(lo + hi) / 2, eroded, rt, ct, holes, wells, hole_rows, bump, height, top, n], after, n
+    rt, ct, holes, wells, hole_rows, bump, height, top, heights = board_part(after, top)
+    vec = [(lo + hi) / 2, eroded, rt, ct, holes, wells, hole_rows, bump, height, top, n]
+    return vec, after, n, heights
+
+
+def place(board, kind, rot, x, y, top=None):
+    """Поставить фигуру: (признаки, поле после хода, линий)."""
+    vec, after, n, _ = place_full(board, kind, rot, x, y, top)
+    return vec, after, n
 
 
 def column_heights(board):
