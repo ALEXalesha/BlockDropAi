@@ -76,9 +76,14 @@ class Agent:
         self.prune = prune
 
     def _places(self, board, kind, start):
-        if self.search == "full":
+        # без навесов полный поиск даёт те же места, что сброс, - а сброс в разы быстрее;
+        # фигуру, уже сдвинутую игроком, ищем полным поиском
+        moved = start is not None and start != B.spawn_state(board, kind)
+        if self.search == "full" and (moved or M.has_overhang(board)):
             return M.all_placements(board, kind, start)
-        return M.drop_placements(board, kind, start)
+        if moved:
+            return M.drop_placements(board, kind, start)
+        return M.fast_drops(board, kind)
 
     def _first_ply(self, board, kind, start, used_hold):
         """[(оценка одного хода, место, признаки, поле после, высота)]."""

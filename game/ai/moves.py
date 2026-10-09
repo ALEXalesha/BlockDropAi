@@ -32,6 +32,38 @@ def _landed(board, kind, rot, x, y):
     return y - B.drop_distance(board, kind, rot, x, y)
 
 
+def has_overhang(board):
+    """Есть ли пустая клетка под занятой. Если нет - мест под навесом тоже нет, и полный
+    поиск находит ровно те же места, что сброс (закон в tests/test_moves.py)."""
+    covered = 0
+    for r in range(B.stack_height(board) - 1, -1, -1):
+        row = board[r]
+        if covered & ~row:
+            return True
+        covered |= row
+    return False
+
+
+_ROT_KEYS = dict(_ROT_PATHS)
+
+
+def fast_drops(board, kind, heights=None):
+    """Места сброса по высотам столбцов, с нажатиями: на невысокой стопке (до
+    features.FAST_TOP) поворот у места появления проходит без сдвига, дальше - сдвиг на
+    нужный столбец и сброс. Те же места, что drop_placements (закон в тестах). На высокой
+    стопке - сам drop_placements."""
+    from game.ai import features as F
+    spots = F.drop_spots(board, kind, heights)
+    if heights is not None and max(heights) > F.FAST_TOP or heights is None and B.stack_height(board) > F.FAST_TOP:
+        return drop_placements(board, kind)
+    out = []
+    for rot, x, y in spots:
+        dx = x - B.SPAWN_X
+        shifts = ("R",) * dx if dx > 0 else ("L",) * -dx
+        out.append(Placement(kind, rot, x, y, _ROT_KEYS[rot] + shifts + ("hd",), cells_key(kind, rot, x, y)))
+    return out
+
+
 def drop_placements(board, kind, start=None):
     """Повернуть, сдвинуть, сбросить. Места без повторов, с нажатиями."""
     start = start or B.spawn_state(board, kind)

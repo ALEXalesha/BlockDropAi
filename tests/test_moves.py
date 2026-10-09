@@ -167,3 +167,42 @@ def test_slide_into_side_tunnel_halfway_down_a_shaft():
     assert len(found) == 1
     landed, g = play_path(b, B.O, found[0].path)
     assert landed[2:] == (found[0].x, found[0].y)
+
+
+@given(st.integers(0, 10 ** 9), st.sampled_from(range(7)))
+def test_without_overhangs_full_search_equals_drops(seed, kind):
+    # нет пустых клеток под занятыми - нет и мест под навесом: полный поиск даёт ровно
+    # те же места, что сброс (на этом стоит быстрый путь игрока)
+    rng = random.Random(seed)
+    heights = [rng.randrange(0, 15) for _ in range(10)]
+    b = [0] * HEIGHT
+    for x, h in enumerate(heights):
+        for r in range(h):
+            b[r] |= 1 << x
+    b = [row for row in b if row != B.FULL] + [B.FULL] * 0
+    b += [0] * (HEIGHT - len(b))
+    assert not M.has_overhang(b)
+    if B.spawn_state(b, kind) is None:
+        return
+    assert {p.key for p in M.drop_placements(b, kind)} == {p.key for p in M.all_placements(b, kind)}
+
+
+def test_has_overhang():
+    b = [0] * HEIGHT
+    b[0], b[1], b[2] = 0b111, 0b011, 0b001          # лесенка
+    assert not M.has_overhang(b)
+    b[1], b[2] = 0b001, 0b011                       # (1,1) пусто под (1,2)
+    assert M.has_overhang(b)
+
+
+@given(st.integers(0, 10 ** 9), st.sampled_from(range(7)))
+def test_fast_drops_equal_drop_placements_and_paths_work(seed, kind):
+    rng = random.Random(seed)
+    board = random_board(rng)
+    if B.spawn_state(board, kind) is None:
+        return
+    fast = M.fast_drops(board, kind)
+    assert {(p.rot, p.x, p.y) for p in fast} == {(p.rot, p.x, p.y) for p in M.drop_placements(board, kind)}
+    for p in fast:
+        landed, _ = play_path(board, kind, p.path)
+        assert landed == (kind, p.rot, p.x, p.y)

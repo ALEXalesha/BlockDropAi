@@ -188,9 +188,12 @@ def spawn_state(board, kind):
     return 0, SPAWN_X, y
 
 
+_LOW = {(k, r): min(cy for _, cy in CELLS[k][r]) for k in range(7) for r in range(4)}
+
+
 def locks_out(kind, rot, y):
     """Фигура целиком выше видимого поля - конец игры (lock out)."""
-    return min(y + cy for _, cy in CELLS[kind][rot]) >= VISIBLE
+    return y + _LOW[kind, rot] >= VISIBLE
 
 
 def stack_height(board):

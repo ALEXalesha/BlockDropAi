@@ -5,6 +5,9 @@
     python -m game.train cem --gens 40 --resume      # продолжить со снимка
     python -m game.train td --trial                  # пробный круг сети TD и прогноз
     python -m game.train td --rounds 60 --minutes 60 # сеть оценки TD (runs/td), один поток
+    python -m game.train export                      # веса из снимка CEM -> game/models
+    python -m game.train passport --trial            # пробы и прогноз времени паспорта
+    python -m game.train passport                    # паспорт модели (runs/passport)
 
 Потоки ограничены: каждый работник считает в одном потоке BLAS, работников не больше
 половины ядер (по умолчанию 6). Журнал и снимок - в --run.
@@ -129,14 +132,73 @@ def run_td(a):
     return 0
 
 
+def passport_args(sub):
+    p = sub.add_parser("export", help="веса из снимка CEM в game/models")
+    p.add_argument("--cem-run", default=os.path.join("runs", "cem"))
+    p.add_argument("--novice-gen", type=int, default=0, help="поколение, чьи веса у новичка")
+    p = sub.add_parser("passport", help="паспорт модели: партии уровней и дуэли")
+    p.add_argument("--run", default=os.path.join("runs", "passport"))
+    p.add_argument("--games", type=int, default=100)
+    p.add_argument("--cap", type=int, default=10000, help="предел линий в партии")
+    p.add_argument("--duels", type=int, default=20, help="дуэлей на пару уровней")
+    p.add_argument("--duel-pieces", type=int, default=1500)
+    p.add_argument("--workers", type=int, default=2)
+    p.add_argument("--trial", action="store_true", help="пробы и прогноз времени")
+
+
+def run_export(a):
+    from game.train import passport as PP
+    m = PP.export_model(a.cem_run, a.novice_gen)
+    print(f"{PP.MODEL_PATH}: {m['training']['generations']} поколений", flush=True)
+    return 0
+
+
+def run_passport(a):
+    from aikit.trainlog import TrainLog
+    from game.train import passport as PP
+    model = PP.load_model()
+    log = TrainLog(os.path.join(a.run, "passport.log"))
+    todo = PP.jobs(a.games, a.duels, a.cap, a.duel_pieces)
+    if a.trial:
+        probes = [j for j in todo if j["kind"] == "probe"]
+        recs = PP.run_jobs(model, probes, a.run, workers=1, log=log)
+        ms = {}
+        for lv in PP.LEVELS:
+            rs = [r for r in recs if r["job"]["level"] == lv]
+            ms[lv] = sum(r["seconds"] for r in rs) / max(sum(r["result"]["pieces"] for r in rs), 1)
+        novice_pieces = sum(r["result"]["pieces"] for r in recs if r["job"]["level"] == "novice") / PP.PROBE_GAMES
+        cpu = {"novice": a.games * novice_pieces * ms["novice"],
+               "medium": a.games * a.cap * PIECES_PER_LINE * ms["medium"],
+               "strong": a.games * a.cap * PIECES_PER_LINE * ms["strong"]}
+        duel_cpu = a.duels * a.duel_pieces * (ms["novice"] + 2 * ms["medium"] + 3 * ms["strong"])
+        total = (sum(cpu.values()) + duel_cpu) / a.workers
+        print(json.dumps({"ms_per_piece": {k: round(v * 1000, 2) for k, v in ms.items()},
+                          "cpu_hours": {k: round(v / 3600, 2) for k, v in cpu.items()},
+                          "duel_cpu_hours": round(duel_cpu / 3600, 2), "workers": a.workers,
+                          "forecast_hours": round(total / 3600, 2)}, ensure_ascii=False))
+        return 0
+    recs = PP.run_jobs(model, todo, a.run, workers=a.workers, log=log)
+    model["passport"] = PP.build(model, recs, a.games, a.cap, a.duels, a.duel_pieces)
+    tmp = PP.MODEL_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline=chr(10)) as f:
+        json.dump(model, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, PP.MODEL_PATH)
+    for lv, s in model["passport"]["levels"].items():
+        print(f"{lv}: среднее {s['mean']}, медиана {s['median']}, до предела {s['capped']}/{len(s['games'])}")
+    for d in model["passport"]["duel"]:
+        print(f"дуэль {d['a']}-{d['b']}: {d['wins_a']}:{d['wins_b']}, ничьих {d['draws']}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="python -m game.train")
     sub = ap.add_subparsers(dest="cmd", required=True)
     cem_args(sub)
     td_args(sub)
+    passport_args(sub)
     a = ap.parse_args(argv)
     started = time.time()
-    code = {"cem": run_cem, "td": run_td}[a.cmd](a)
+    code = {"cem": run_cem, "td": run_td, "export": run_export, "passport": run_passport}[a.cmd](a)
     print(f"готово за {time.time() - started:.0f} с", flush=True)
     return code
 
