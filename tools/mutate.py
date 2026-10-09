@@ -28,8 +28,22 @@ def load_more():
     return []
 
 
+def pytest_ok(tests, python):
+    r = subprocess.run([python, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", *tests.split()],
+                       cwd=ROOT, capture_output=True, text=True, timeout=900)
+    return r.returncode == 0
+
+
+_BASELINE = {}
+
+
 def run(mutant, python):
     name, rel, old, new, tests = mutant
+    # без мутанта проверки должны быть зелёными, иначе «пойман» ничего не значит
+    if tests not in _BASELINE:
+        _BASELINE[tests] = pytest_ok(tests, python)
+    if not _BASELINE[tests]:
+        return name, "КРАСНЫЕ без мутанта"
     path = os.path.join(ROOT, rel)
     with open(path, encoding="utf-8", newline="") as f:
         src = f.read()
@@ -38,10 +52,7 @@ def run(mutant, python):
     try:
         with open(path, "w", encoding="utf-8", newline="") as f:
             f.write(src.replace(old, new))
-        r = subprocess.run([python, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider",
-                            *tests.split()], cwd=ROOT, capture_output=True, text=True,
-                           timeout=900)
-        return name, "пойман" if r.returncode != 0 else "ВЫЖИЛ"
+        return name, "ВЫЖИЛ" if pytest_ok(tests, python) else "пойман"
     finally:
         with open(path, "w", encoding="utf-8", newline="") as f:
             f.write(src)

@@ -49,9 +49,10 @@ def test_td_learning_beats_untrained_net(tmp_path):
 
 
 def test_snapshot_resume(tmp_path):
-    a = td.Trainer(str(tmp_path / "a"), **SMALL)
+    cfg = {**SMALL, "steps_per_update": 10, "batch": 16}      # чтобы Adam успел сделать шаги
+    a = td.Trainer(str(tmp_path / "a"), **cfg)
     a.round(games=3)
-    b = td.Trainer(str(tmp_path / "a"), **SMALL)
+    b = td.Trainer(str(tmp_path / "a"), **cfg)
     assert b.load_snapshot()
     assert b.rounds == 1 and b.steps == a.steps
     assert b.adam.t == a.adam.t > 0
