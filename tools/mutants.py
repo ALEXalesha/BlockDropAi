@@ -20,8 +20,8 @@ MUTANTS = [
     ("rules: уровень не растёт", E, "self.level = self.start_level + self.lines // LINES_PER_LEVEL",
      "self.level = self.start_level", TB),
     ("rules: hold без ограничения", E, "if self.over or self.hold_used:", "if self.over:", TB),
-    ("rules: hold не возвращается", E, "        self.hold_used = False\n        self.events.append((\"lock\", n))",
-     "        self.events.append((\"lock\", n))", TB),
+    ("rules: hold не возвращается", E, "        self.hold_used = False\n        self.events.append((\"lock\", n, kind, rot, x, y))",
+     "        self.events.append((\"lock\", n, kind, rot, x, y))", TB),
     ("rules: задержка не копится", E, "need = LOCK_DELAY - self.lock_timer", "need = LOCK_DELAY", TB),
     ("rules: бесконечные отсрочки", E, "if self.resets < MAX_RESETS:", "if True:", TB),
     ("rules: время от кадров", E,
@@ -83,4 +83,19 @@ MUTANTS += [
     ("td: ход по худшему", TDF, "else int(np.argmax(q))", "else int(np.argmin(q))", TT),
     ("td: шаг обучения не делается", TDF, "            self.adam.step()\n", "", TT),
     ("td: снимок без Adam", TDF, "        self.adam.t = meta[\"adam_t\"]\n", "", TT),
+]
+SE = "game/ui/session.py"
+TS = "tests/test_session.py"
+TU = "tests/test_ui.py"
+MUTANTS += [
+    ("session: думает только после паузы", SE, "            self._plan(now)\n        if now < self.ready_at:",
+     "        if now < self.ready_at:", TU + " -k thoughts_visible"),
+    ("session: задержка автоповтора вдвое короче", SE, "        if held_for < self.das:",
+     "        if held_for < self.das / 2:", TS),
+    ("session: ARR 0 по одному", SE, "            return B.WIDTH + 1                   # мгновенно до стены",
+     "            return 1", TS),
+    ("session: ИИ без предела скорости", SE, "            self.ready_at = max(self.ready_at, now) + self.think",
+     "            self.ready_at = max(self.ready_at, now)", TS),
+    ("session: мусор не уходит", SE, "                other.receive_garbage(new)", "                pass", TS),
+    ("session: без перепланирования", SE, "                self._plan(now, replan=True)", "                pass", TS),
 ]

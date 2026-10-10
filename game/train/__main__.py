@@ -139,7 +139,8 @@ def passport_args(sub):
     p = sub.add_parser("passport", help="паспорт модели: партии уровней и дуэли")
     p.add_argument("--run", default=os.path.join("runs", "passport"))
     p.add_argument("--games", type=int, default=100)
-    p.add_argument("--cap", type=int, default=10000, help="предел линий в партии")
+    p.add_argument("--cap", type=int, default=10000, help="предел линий: новичок и средний")
+    p.add_argument("--strong-cap", type=int, default=20000, help="предел линий сильного")
     p.add_argument("--duels", type=int, default=20, help="дуэлей на пару уровней")
     p.add_argument("--duel-pieces", type=int, default=1500)
     p.add_argument("--workers", type=int, default=2)
@@ -158,7 +159,7 @@ def run_passport(a):
     from game.train import passport as PP
     model = PP.load_model()
     log = TrainLog(os.path.join(a.run, "passport.log"))
-    todo = PP.jobs(a.games, a.duels, a.cap, a.duel_pieces)
+    todo = PP.jobs(a.games, a.duels, a.cap, a.duel_pieces, a.strong_cap)
     if a.trial:
         probes = [j for j in todo if j["kind"] == "probe"]
         recs = PP.run_jobs(model, probes, a.run, workers=1, log=log)
@@ -169,7 +170,7 @@ def run_passport(a):
         novice_pieces = sum(r["result"]["pieces"] for r in recs if r["job"]["level"] == "novice") / PP.PROBE_GAMES
         cpu = {"novice": a.games * novice_pieces * ms["novice"],
                "medium": a.games * a.cap * PIECES_PER_LINE * ms["medium"],
-               "strong": a.games * a.cap * PIECES_PER_LINE * ms["strong"]}
+               "strong": a.games * a.strong_cap * PIECES_PER_LINE * ms["strong"]}
         duel_cpu = a.duels * a.duel_pieces * (ms["novice"] + 2 * ms["medium"] + 3 * ms["strong"])
         total = (sum(cpu.values()) + duel_cpu) / a.workers
         print(json.dumps({"ms_per_piece": {k: round(v * 1000, 2) for k, v in ms.items()},
@@ -178,7 +179,7 @@ def run_passport(a):
                           "forecast_hours": round(total / 3600, 2)}, ensure_ascii=False))
         return 0
     recs = PP.run_jobs(model, todo, a.run, workers=a.workers, log=log)
-    model["passport"] = PP.build(model, recs, a.games, a.cap, a.duels, a.duel_pieces)
+    model["passport"] = PP.build(model, recs, a.games, a.cap, a.duels, a.duel_pieces, a.strong_cap)
     tmp = PP.MODEL_PATH + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline=chr(10)) as f:
         json.dump(model, f, ensure_ascii=False, indent=1)

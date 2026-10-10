@@ -39,6 +39,14 @@ def test_summary_mean_median():
     assert s["mean"] == pytest.approx(140 / 3, abs=0.01) and s["median"] == 30 and s["capped"] == 1
 
 
+def test_strong_has_its_own_cap():
+    js = PP.jobs(games=2, duels=0, cap=100, duel_pieces=10, strong_cap=300)
+    caps = {j["level"]: j["cap"] for j in js if j["kind"] == "game"}
+    assert caps == {"novice": 100, "medium": 100, "strong": 300}
+    # пробы не зависят от пределов - их итоги из прошлого прогона годятся
+    assert all(j["cap"] == PP.PROBE_CAP for j in js if j["kind"] == "probe")
+
+
 def test_resume_skips_done_jobs(tmp_path):
     run = str(tmp_path / "p")
     jobs = PP.jobs(games=2, duels=2, cap=30, duel_pieces=100)
@@ -74,7 +82,7 @@ def test_passport_novice_games_recompute():
     if model is None:
         pytest.skip("паспорт ещё не посчитан")
     games = model["passport"]["levels"]["novice"]["games"][:3]
-    cap = model["passport"]["cap"]
+    cap = model["passport"]["caps"]["novice"]
     for g in games:
         r = PP.level_game(model, "novice", g["seed"], cap=cap)
         assert r["lines"] == g["lines"]

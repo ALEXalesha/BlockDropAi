@@ -28,9 +28,13 @@ def load_more():
     return []
 
 
-def pytest_ok(tests, python):
-    r = subprocess.run([python, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", *tests.split()],
-                       cwd=ROOT, capture_output=True, text=True, timeout=900)
+def pytest_ok(tests, python, timeout=900):
+    """Зелёные ли проверки. Зависли дольше timeout - не зелёные (мутант пойман зависанием)."""
+    try:
+        r = subprocess.run([python, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", *tests.split()],
+                           cwd=ROOT, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return False
     return r.returncode == 0
 
 

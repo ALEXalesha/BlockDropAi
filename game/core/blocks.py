@@ -220,8 +220,8 @@ class Bag:
 
 class Game:
     """Партия одного игрока. Ввод - методы move/rotate/soft_drop/hard_drop/hold, время -
-    update(dt). События для окна копятся в self.events: ("lock", линий), ("clear", ряды),
-    ("over",), ("hold",)."""
+    update(dt). События для окна копятся в self.events: ("lock", линий, вид, поворот, x, y),
+    ("clear", ряды), ("garbage", рядов), ("over",), ("hold",)."""
 
     def __init__(self, seed=None, level=1, gravity=True):
         self.board = [0] * HEIGHT
@@ -417,7 +417,7 @@ class Game:
         self.score += LINE_SCORES[n] * self.level
         self.level = self.start_level + self.lines // LINES_PER_LEVEL
         self.hold_used = False
-        self.events.append(("lock", n))
+        self.events.append(("lock", n, kind, rot, x, y))
         if n:
             self.events.append(("clear", tuple(rows)))
             self.garbage_sent += GARBAGE_FOR[n]
@@ -466,3 +466,4 @@ class Game:
         row = FULL & ~(1 << hole)
         self.board = [row] * n + self.board[:HEIGHT - n]
         self.garbage_rows += n
+        self.events.append(("garbage", n))
