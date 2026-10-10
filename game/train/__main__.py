@@ -8,6 +8,7 @@
     python -m game.train export                      # веса из снимка CEM -> game/models
     python -m game.train passport --trial            # пробы и прогноз времени паспорта
     python -m game.train passport                    # паспорт модели (runs/passport)
+    python -m game.train compare                     # CEM против сети TD одним протоколом
 
 Потоки ограничены: каждый работник считает в одном потоке BLAS, работников не больше
 половины ядер (по умолчанию 6). Журнал и снимок - в --run.
@@ -147,6 +148,38 @@ def passport_args(sub):
     p.add_argument("--trial", action="store_true", help="пробы и прогноз времени")
 
 
+def compare_args(sub):
+    p = sub.add_parser("compare", help="CEM против сети TD одним протоколом")
+    p.add_argument("--net", default=os.path.join("runs", "td", "td-value.npz"))
+    p.add_argument("--games", type=int, default=20)
+    p.add_argument("--cap", type=int, default=10000)
+    p.add_argument("--workers", type=int, default=2)
+    p.add_argument("--run", default=os.path.join("runs", "compare"))
+
+
+def run_compare(a):
+    from aikit.trainlog import TrainLog
+    from game.train import passport as PP
+    model = PP.load_model()
+    out = PP.compare_td(model, a.net, a.games, a.cap, a.workers, a.run,
+                        log=TrainLog(os.path.join(a.run, "compare.log")))
+    td_meta = {}
+    snap = os.path.join(os.path.dirname(a.net), "td.npz")
+    from aikit.trainlog import load_snapshot
+    got = load_snapshot(snap)
+    if got is not None:
+        td_meta = {"rounds": got[1]["rounds"], "steps": got[1]["steps"], "seconds": round(got[1]["seconds"], 1)}
+    model["comparison"] = {"protocol": f"средний уровень, {a.games} партий, до {a.cap} линий",
+                           "cem": out["cem"], "td": {**out["td"], "training": td_meta},
+                           "chosen": "cem" if out["cem"]["mean"] >= out["td"]["mean"] else "td"}
+    tmp = PP.MODEL_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline=chr(10)) as f:
+        json.dump(model, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, PP.MODEL_PATH)
+    print(json.dumps(model["comparison"], ensure_ascii=False))
+    return 0
+
+
 def run_export(a):
     from game.train import passport as PP
     m = PP.export_model(a.cem_run, a.novice_gen)
@@ -197,9 +230,11 @@ def main(argv=None):
     cem_args(sub)
     td_args(sub)
     passport_args(sub)
+    compare_args(sub)
     a = ap.parse_args(argv)
     started = time.time()
-    code = {"cem": run_cem, "td": run_td, "export": run_export, "passport": run_passport}[a.cmd](a)
+    code = {"cem": run_cem, "td": run_td, "export": run_export, "passport": run_passport,
+            "compare": run_compare}[a.cmd](a)
     print(f"готово за {time.time() - started:.0f} с", flush=True)
     return code
 

@@ -91,3 +91,12 @@ def test_passport_novice_games_recompute():
 def test_agent_from_model_plays_by_buttons():
     r = P.play_game(PP.level_agent("strong", MODEL), seed=2, max_lines=15)
     assert r["lines"] >= 15
+
+
+def test_compare_cem_and_td_same_protocol(tmp_path):
+    from game.ai.net import ValueNet
+    net = str(tmp_path / "v.npz")
+    ValueNet(hidden=8, seed=1).save(net)
+    out = PP.compare_td(MODEL, net, games=2, cap=20, workers=1, run=str(tmp_path / "c"))
+    assert out["cem"]["games"] == 2 and out["td"]["games"] == 2
+    assert out["cem"]["cap"] == out["td"]["cap"] == 20

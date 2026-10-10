@@ -124,6 +124,8 @@ def do_job(j, model=None):
     t0 = time.perf_counter()
     if j["kind"] == "duel":
         r = duel(model, j["a"], j["b"], j["seed"], j["pieces"])
+    elif j["kind"] == "cmp":
+        r = P.play_game(_cmp_agent(j, model), j["seed"], max_lines=j["cap"])
     else:
         r = level_game(model, j["level"], j["seed"], j["cap"])
     return {"job": j, "result": r, "seconds": round(time.perf_counter() - t0, 3)}
@@ -152,7 +154,7 @@ def run_jobs(model, todo, run, workers=2, log=None):
         if log:
             j, r = rec["job"], rec["result"]
             what = (f"дуэль {j['a']}-{j['b']} #{j['seed'] - SEED0}: {r['winner']}" if j["kind"] == "duel"
-                    else f"{j['kind']} {j['level']} #{j['seed'] - SEED0}: {r['lines']} линий")
+                    else f"{j['kind']} {j.get('level', j.get('who'))} #{j['seed'] - SEED0}: {r['lines']} линий")
             log(f"{len(done)}/{len(todo)}  {what}  ({rec['seconds']:.1f} с)")
 
     if workers > 1 and left:
@@ -226,3 +228,25 @@ def export_model(cem_run, novice_gen=0, path=MODEL_PATH):
         json.dump(model, f, ensure_ascii=False, indent=1)
     os.replace(tmp, path)
     return model
+
+
+def compare_td(model, net_path, games=20, cap=10000, workers=2, run=None, log=None):
+    """CEM и сеть TD одним протоколом: средний уровень (полный поиск, без взгляда вперёд),
+    те же зёрна, тот же предел. Возвращает {'cem': итог, 'td': итог}."""
+    todo = [{"kind": "cmp", "who": who, "seed": SEED0 + i, "cap": cap, "net": net_path}
+            for who in ("cem", "td") for i in range(games)]
+    recs = run_jobs(model, todo, run or os.path.join("runs", "compare"), workers=workers, log=log)
+    out = {}
+    for who in ("cem", "td"):
+        rs = [r for r in recs if r["job"]["who"] == who]
+        res = [r["result"] for r in rs]
+        secs = sum(r["seconds"] for r in rs)
+        out[who] = summarize(res, cap, secs, sum(r["pieces"] for r in res))
+    return out
+
+
+def _cmp_agent(job, model):
+    if job["who"] == "cem":
+        return level_agent("medium", model)
+    from game.ai.net import ValueNet
+    return P.Agent(P.Net(ValueNet.load(job["net"])), search="full")
