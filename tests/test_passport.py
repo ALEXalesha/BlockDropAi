@@ -100,3 +100,30 @@ def test_compare_cem_and_td_same_protocol(tmp_path):
     out = PP.compare_td(MODEL, net, games=2, cap=20, workers=1, run=str(tmp_path / "c"))
     assert out["cem"]["games"] == 2 and out["td"]["games"] == 2
     assert out["cem"]["cap"] == out["td"]["cap"] == 20
+
+
+def test_hard_test_ends_on_short_field():
+    r = PP.hard_game(MODEL, "medium", 3, ceiling=4, cap=500)
+    assert r == PP.hard_game(MODEL, "medium", 3, ceiling=4, cap=500)
+    assert r["lines"] < 500 and not r["capped"]
+    js = PP.jobs(games=2, duels=0, cap=10, duel_pieces=10, hard_games=3)
+    assert sum(1 for j in js if j["kind"] == "hard") == 3 * len(PP.LEVELS)
+
+
+def test_readme_numbers_match_passport():
+    model = stored()
+    if model is None:
+        pytest.skip("паспорт ещё не посчитан")
+    pp = model["passport"]
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    en = open(os.path.join(root, "README.md"), encoding="utf-8").read()
+    ru = open(os.path.join(root, "README.ru.md"), encoding="utf-8").read()
+    nov = pp["levels"]["novice"]
+    assert f"| Novice | {nov['mean']:.1f} | {nov['median']:g} |" in en
+    assert f"| Новичок | {nov['mean']:.1f} | {nov['median']:g} |".replace(".", ",") in ru
+    for lv, name in (("novice", "Novice"), ("medium", "Medium"), ("strong", "Strong")):
+        h = pp["hard"]["levels"][lv]
+        assert f"| {name} | {h['mean']:.1f} | {h['median']:g} |" in en, lv
+    for lv in ("medium", "strong"):
+        s = pp["levels"][lv]
+        assert s["capped"] == len(s["games"]) == 100

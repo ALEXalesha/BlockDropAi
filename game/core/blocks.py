@@ -218,14 +218,24 @@ class Bag:
         return self.pool.pop()
 
 
+class Uniform:
+    """Равновероятные фигуры, без мешка - труднее (для проверок силы ИИ)."""
+
+    def __init__(self, seed=None):
+        self.rng = random.Random(seed)
+
+    def next(self):
+        return self.rng.randrange(7)
+
+
 class Game:
     """Партия одного игрока. Ввод - методы move/rotate/soft_drop/hard_drop/hold, время -
     update(dt). События для окна копятся в self.events: ("lock", линий, вид, поворот, x, y),
     ("clear", ряды), ("garbage", рядов), ("over",), ("hold",)."""
 
-    def __init__(self, seed=None, level=1, gravity=True):
+    def __init__(self, seed=None, level=1, gravity=True, randomizer="bag"):
         self.board = [0] * HEIGHT
-        self.bag = Bag(seed)
+        self.bag = Bag(seed) if randomizer == "bag" else Uniform(seed)
         self.queue = [self.bag.next() for _ in range(PREVIEW + 1)]
         self.hold_kind = None
         self.hold_used = False

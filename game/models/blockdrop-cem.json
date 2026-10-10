@@ -273,5 +273,1429 @@
     "seconds": 1132.7
    }
   ]
+ },
+ "passport": {
+  "caps": {
+   "novice": 10000,
+   "medium": 10000,
+   "strong": 20000
+  },
+  "games": 100,
+  "duels": 20,
+  "duel_pieces": 1500,
+  "levels": {
+   "novice": {
+    "games": [
+     {
+      "seed": 1000,
+      "lines": 29
+     },
+     {
+      "seed": 1001,
+      "lines": 33
+     },
+     {
+      "seed": 1002,
+      "lines": 65
+     },
+     {
+      "seed": 1003,
+      "lines": 63
+     },
+     {
+      "seed": 1004,
+      "lines": 54
+     },
+     {
+      "seed": 1005,
+      "lines": 48
+     },
+     {
+      "seed": 1006,
+      "lines": 29
+     },
+     {
+      "seed": 1007,
+      "lines": 30
+     },
+     {
+      "seed": 1008,
+      "lines": 26
+     },
+     {
+      "seed": 1009,
+      "lines": 59
+     },
+     {
+      "seed": 1010,
+      "lines": 60
+     },
+     {
+      "seed": 1011,
+      "lines": 43
+     },
+     {
+      "seed": 1012,
+      "lines": 69
+     },
+     {
+      "seed": 1013,
+      "lines": 24
+     },
+     {
+      "seed": 1014,
+      "lines": 33
+     },
+     {
+      "seed": 1015,
+      "lines": 36
+     },
+     {
+      "seed": 1016,
+      "lines": 52
+     },
+     {
+      "seed": 1017,
+      "lines": 56
+     },
+     {
+      "seed": 1018,
+      "lines": 93
+     },
+     {
+      "seed": 1019,
+      "lines": 39
+     },
+     {
+      "seed": 1020,
+      "lines": 29
+     },
+     {
+      "seed": 1021,
+      "lines": 37
+     },
+     {
+      "seed": 1022,
+      "lines": 10
+     },
+     {
+      "seed": 1023,
+      "lines": 23
+     },
+     {
+      "seed": 1024,
+      "lines": 13
+     },
+     {
+      "seed": 1025,
+      "lines": 31
+     },
+     {
+      "seed": 1026,
+      "lines": 81
+     },
+     {
+      "seed": 1027,
+      "lines": 81
+     },
+     {
+      "seed": 1028,
+      "lines": 99
+     },
+     {
+      "seed": 1029,
+      "lines": 30
+     },
+     {
+      "seed": 1030,
+      "lines": 29
+     },
+     {
+      "seed": 1031,
+      "lines": 32
+     },
+     {
+      "seed": 1032,
+      "lines": 80
+     },
+     {
+      "seed": 1033,
+      "lines": 36
+     },
+     {
+      "seed": 1034,
+      "lines": 30
+     },
+     {
+      "seed": 1035,
+      "lines": 47
+     },
+     {
+      "seed": 1036,
+      "lines": 35
+     },
+     {
+      "seed": 1037,
+      "lines": 44
+     },
+     {
+      "seed": 1038,
+      "lines": 47
+     },
+     {
+      "seed": 1039,
+      "lines": 30
+     },
+     {
+      "seed": 1040,
+      "lines": 43
+     },
+     {
+      "seed": 1041,
+      "lines": 35
+     },
+     {
+      "seed": 1042,
+      "lines": 34
+     },
+     {
+      "seed": 1043,
+      "lines": 69
+     },
+     {
+      "seed": 1044,
+      "lines": 33
+     },
+     {
+      "seed": 1045,
+      "lines": 76
+     },
+     {
+      "seed": 1046,
+      "lines": 98
+     },
+     {
+      "seed": 1047,
+      "lines": 85
+     },
+     {
+      "seed": 1048,
+      "lines": 28
+     },
+     {
+      "seed": 1049,
+      "lines": 32
+     },
+     {
+      "seed": 1050,
+      "lines": 67
+     },
+     {
+      "seed": 1051,
+      "lines": 54
+     },
+     {
+      "seed": 1052,
+      "lines": 71
+     },
+     {
+      "seed": 1053,
+      "lines": 30
+     },
+     {
+      "seed": 1054,
+      "lines": 36
+     },
+     {
+      "seed": 1055,
+      "lines": 26
+     },
+     {
+      "seed": 1056,
+      "lines": 40
+     },
+     {
+      "seed": 1057,
+      "lines": 57
+     },
+     {
+      "seed": 1058,
+      "lines": 54
+     },
+     {
+      "seed": 1059,
+      "lines": 24
+     },
+     {
+      "seed": 1060,
+      "lines": 51
+     },
+     {
+      "seed": 1061,
+      "lines": 18
+     },
+     {
+      "seed": 1062,
+      "lines": 30
+     },
+     {
+      "seed": 1063,
+      "lines": 21
+     },
+     {
+      "seed": 1064,
+      "lines": 39
+     },
+     {
+      "seed": 1065,
+      "lines": 36
+     },
+     {
+      "seed": 1066,
+      "lines": 62
+     },
+     {
+      "seed": 1067,
+      "lines": 70
+     },
+     {
+      "seed": 1068,
+      "lines": 51
+     },
+     {
+      "seed": 1069,
+      "lines": 72
+     },
+     {
+      "seed": 1070,
+      "lines": 57
+     },
+     {
+      "seed": 1071,
+      "lines": 23
+     },
+     {
+      "seed": 1072,
+      "lines": 37
+     },
+     {
+      "seed": 1073,
+      "lines": 49
+     },
+     {
+      "seed": 1074,
+      "lines": 50
+     },
+     {
+      "seed": 1075,
+      "lines": 15
+     },
+     {
+      "seed": 1076,
+      "lines": 36
+     },
+     {
+      "seed": 1077,
+      "lines": 42
+     },
+     {
+      "seed": 1078,
+      "lines": 42
+     },
+     {
+      "seed": 1079,
+      "lines": 56
+     },
+     {
+      "seed": 1080,
+      "lines": 48
+     },
+     {
+      "seed": 1081,
+      "lines": 66
+     },
+     {
+      "seed": 1082,
+      "lines": 45
+     },
+     {
+      "seed": 1083,
+      "lines": 61
+     },
+     {
+      "seed": 1084,
+      "lines": 99
+     },
+     {
+      "seed": 1085,
+      "lines": 11
+     },
+     {
+      "seed": 1086,
+      "lines": 38
+     },
+     {
+      "seed": 1087,
+      "lines": 62
+     },
+     {
+      "seed": 1088,
+      "lines": 53
+     },
+     {
+      "seed": 1089,
+      "lines": 103
+     },
+     {
+      "seed": 1090,
+      "lines": 76
+     },
+     {
+      "seed": 1091,
+      "lines": 82
+     },
+     {
+      "seed": 1092,
+      "lines": 30
+     },
+     {
+      "seed": 1093,
+      "lines": 39
+     },
+     {
+      "seed": 1094,
+      "lines": 44
+     },
+     {
+      "seed": 1095,
+      "lines": 56
+     },
+     {
+      "seed": 1096,
+      "lines": 35
+     },
+     {
+      "seed": 1097,
+      "lines": 48
+     },
+     {
+      "seed": 1098,
+      "lines": 92
+     },
+     {
+      "seed": 1099,
+      "lines": 49
+     }
+    ],
+    "cap": 10000,
+    "mean": 47.71,
+    "median": 43.5,
+    "min": 10,
+    "max": 103,
+    "capped": 0,
+    "pieces_per_sec": 635.8,
+    "seconds": 25.6
+   },
+   "medium": {
+    "games": [
+     {
+      "seed": 1000,
+      "lines": 10000
+     },
+     {
+      "seed": 1001,
+      "lines": 10000
+     },
+     {
+      "seed": 1002,
+      "lines": 10000
+     },
+     {
+      "seed": 1003,
+      "lines": 10000
+     },
+     {
+      "seed": 1004,
+      "lines": 10001
+     },
+     {
+      "seed": 1005,
+      "lines": 10000
+     },
+     {
+      "seed": 1006,
+      "lines": 10000
+     },
+     {
+      "seed": 1007,
+      "lines": 10000
+     },
+     {
+      "seed": 1008,
+      "lines": 10000
+     },
+     {
+      "seed": 1009,
+      "lines": 10000
+     },
+     {
+      "seed": 1010,
+      "lines": 10000
+     },
+     {
+      "seed": 1011,
+      "lines": 10000
+     },
+     {
+      "seed": 1012,
+      "lines": 10000
+     },
+     {
+      "seed": 1013,
+      "lines": 10000
+     },
+     {
+      "seed": 1014,
+      "lines": 10001
+     },
+     {
+      "seed": 1015,
+      "lines": 10000
+     },
+     {
+      "seed": 1016,
+      "lines": 10000
+     },
+     {
+      "seed": 1017,
+      "lines": 10000
+     },
+     {
+      "seed": 1018,
+      "lines": 10000
+     },
+     {
+      "seed": 1019,
+      "lines": 10000
+     },
+     {
+      "seed": 1020,
+      "lines": 10000
+     },
+     {
+      "seed": 1021,
+      "lines": 10000
+     },
+     {
+      "seed": 1022,
+      "lines": 10000
+     },
+     {
+      "seed": 1023,
+      "lines": 10000
+     },
+     {
+      "seed": 1024,
+      "lines": 10001
+     },
+     {
+      "seed": 1025,
+      "lines": 10000
+     },
+     {
+      "seed": 1026,
+      "lines": 10000
+     },
+     {
+      "seed": 1027,
+      "lines": 10001
+     },
+     {
+      "seed": 1028,
+      "lines": 10000
+     },
+     {
+      "seed": 1029,
+      "lines": 10001
+     },
+     {
+      "seed": 1030,
+      "lines": 10000
+     },
+     {
+      "seed": 1031,
+      "lines": 10000
+     },
+     {
+      "seed": 1032,
+      "lines": 10000
+     },
+     {
+      "seed": 1033,
+      "lines": 10000
+     },
+     {
+      "seed": 1034,
+      "lines": 10000
+     },
+     {
+      "seed": 1035,
+      "lines": 10000
+     },
+     {
+      "seed": 1036,
+      "lines": 10000
+     },
+     {
+      "seed": 1037,
+      "lines": 10000
+     },
+     {
+      "seed": 1038,
+      "lines": 10000
+     },
+     {
+      "seed": 1039,
+      "lines": 10000
+     },
+     {
+      "seed": 1040,
+      "lines": 10000
+     },
+     {
+      "seed": 1041,
+      "lines": 10000
+     },
+     {
+      "seed": 1042,
+      "lines": 10000
+     },
+     {
+      "seed": 1043,
+      "lines": 10000
+     },
+     {
+      "seed": 1044,
+      "lines": 10000
+     },
+     {
+      "seed": 1045,
+      "lines": 10001
+     },
+     {
+      "seed": 1046,
+      "lines": 10000
+     },
+     {
+      "seed": 1047,
+      "lines": 10000
+     },
+     {
+      "seed": 1048,
+      "lines": 10000
+     },
+     {
+      "seed": 1049,
+      "lines": 10000
+     },
+     {
+      "seed": 1050,
+      "lines": 10000
+     },
+     {
+      "seed": 1051,
+      "lines": 10002
+     },
+     {
+      "seed": 1052,
+      "lines": 10000
+     },
+     {
+      "seed": 1053,
+      "lines": 10000
+     },
+     {
+      "seed": 1054,
+      "lines": 10000
+     },
+     {
+      "seed": 1055,
+      "lines": 10000
+     },
+     {
+      "seed": 1056,
+      "lines": 10000
+     },
+     {
+      "seed": 1057,
+      "lines": 10001
+     },
+     {
+      "seed": 1058,
+      "lines": 10000
+     },
+     {
+      "seed": 1059,
+      "lines": 10001
+     },
+     {
+      "seed": 1060,
+      "lines": 10000
+     },
+     {
+      "seed": 1061,
+      "lines": 10000
+     },
+     {
+      "seed": 1062,
+      "lines": 10000
+     },
+     {
+      "seed": 1063,
+      "lines": 10000
+     },
+     {
+      "seed": 1064,
+      "lines": 10000
+     },
+     {
+      "seed": 1065,
+      "lines": 10000
+     },
+     {
+      "seed": 1066,
+      "lines": 10000
+     },
+     {
+      "seed": 1067,
+      "lines": 10001
+     },
+     {
+      "seed": 1068,
+      "lines": 10000
+     },
+     {
+      "seed": 1069,
+      "lines": 10000
+     },
+     {
+      "seed": 1070,
+      "lines": 10000
+     },
+     {
+      "seed": 1071,
+      "lines": 10000
+     },
+     {
+      "seed": 1072,
+      "lines": 10000
+     },
+     {
+      "seed": 1073,
+      "lines": 10000
+     },
+     {
+      "seed": 1074,
+      "lines": 10000
+     },
+     {
+      "seed": 1075,
+      "lines": 10001
+     },
+     {
+      "seed": 1076,
+      "lines": 10000
+     },
+     {
+      "seed": 1077,
+      "lines": 10000
+     },
+     {
+      "seed": 1078,
+      "lines": 10000
+     },
+     {
+      "seed": 1079,
+      "lines": 10001
+     },
+     {
+      "seed": 1080,
+      "lines": 10001
+     },
+     {
+      "seed": 1081,
+      "lines": 10001
+     },
+     {
+      "seed": 1082,
+      "lines": 10000
+     },
+     {
+      "seed": 1083,
+      "lines": 10000
+     },
+     {
+      "seed": 1084,
+      "lines": 10001
+     },
+     {
+      "seed": 1085,
+      "lines": 10000
+     },
+     {
+      "seed": 1086,
+      "lines": 10001
+     },
+     {
+      "seed": 1087,
+      "lines": 10000
+     },
+     {
+      "seed": 1088,
+      "lines": 10000
+     },
+     {
+      "seed": 1089,
+      "lines": 10000
+     },
+     {
+      "seed": 1090,
+      "lines": 10000
+     },
+     {
+      "seed": 1091,
+      "lines": 10000
+     },
+     {
+      "seed": 1092,
+      "lines": 10000
+     },
+     {
+      "seed": 1093,
+      "lines": 10000
+     },
+     {
+      "seed": 1094,
+      "lines": 10000
+     },
+     {
+      "seed": 1095,
+      "lines": 10000
+     },
+     {
+      "seed": 1096,
+      "lines": 10000
+     },
+     {
+      "seed": 1097,
+      "lines": 10000
+     },
+     {
+      "seed": 1098,
+      "lines": 10000
+     },
+     {
+      "seed": 1099,
+      "lines": 10000
+     }
+    ],
+    "cap": 10000,
+    "mean": 10000.17,
+    "median": 10000.0,
+    "min": 10000,
+    "max": 10002,
+    "capped": 100,
+    "pieces_per_sec": 595.3,
+    "seconds": 4200.2
+   },
+   "strong": {
+    "games": [
+     {
+      "seed": 1000,
+      "lines": 20001
+     },
+     {
+      "seed": 1001,
+      "lines": 20000
+     },
+     {
+      "seed": 1002,
+      "lines": 20000
+     },
+     {
+      "seed": 1003,
+      "lines": 20000
+     },
+     {
+      "seed": 1004,
+      "lines": 20000
+     },
+     {
+      "seed": 1005,
+      "lines": 20000
+     },
+     {
+      "seed": 1006,
+      "lines": 20000
+     },
+     {
+      "seed": 1007,
+      "lines": 20000
+     },
+     {
+      "seed": 1008,
+      "lines": 20001
+     },
+     {
+      "seed": 1009,
+      "lines": 20000
+     },
+     {
+      "seed": 1010,
+      "lines": 20000
+     },
+     {
+      "seed": 1011,
+      "lines": 20000
+     },
+     {
+      "seed": 1012,
+      "lines": 20000
+     },
+     {
+      "seed": 1013,
+      "lines": 20000
+     },
+     {
+      "seed": 1014,
+      "lines": 20001
+     },
+     {
+      "seed": 1015,
+      "lines": 20000
+     },
+     {
+      "seed": 1016,
+      "lines": 20000
+     },
+     {
+      "seed": 1017,
+      "lines": 20000
+     },
+     {
+      "seed": 1018,
+      "lines": 20000
+     },
+     {
+      "seed": 1019,
+      "lines": 20000
+     },
+     {
+      "seed": 1020,
+      "lines": 20000
+     },
+     {
+      "seed": 1021,
+      "lines": 20000
+     },
+     {
+      "seed": 1022,
+      "lines": 20000
+     },
+     {
+      "seed": 1023,
+      "lines": 20001
+     },
+     {
+      "seed": 1024,
+      "lines": 20000
+     },
+     {
+      "seed": 1025,
+      "lines": 20001
+     },
+     {
+      "seed": 1026,
+      "lines": 20000
+     },
+     {
+      "seed": 1027,
+      "lines": 20000
+     },
+     {
+      "seed": 1028,
+      "lines": 20000
+     },
+     {
+      "seed": 1029,
+      "lines": 20001
+     },
+     {
+      "seed": 1030,
+      "lines": 20000
+     },
+     {
+      "seed": 1031,
+      "lines": 20000
+     },
+     {
+      "seed": 1032,
+      "lines": 20000
+     },
+     {
+      "seed": 1033,
+      "lines": 20000
+     },
+     {
+      "seed": 1034,
+      "lines": 20000
+     },
+     {
+      "seed": 1035,
+      "lines": 20000
+     },
+     {
+      "seed": 1036,
+      "lines": 20000
+     },
+     {
+      "seed": 1037,
+      "lines": 20000
+     },
+     {
+      "seed": 1038,
+      "lines": 20000
+     },
+     {
+      "seed": 1039,
+      "lines": 20000
+     },
+     {
+      "seed": 1040,
+      "lines": 20000
+     },
+     {
+      "seed": 1041,
+      "lines": 20000
+     },
+     {
+      "seed": 1042,
+      "lines": 20000
+     },
+     {
+      "seed": 1043,
+      "lines": 20000
+     },
+     {
+      "seed": 1044,
+      "lines": 20000
+     },
+     {
+      "seed": 1045,
+      "lines": 20000
+     },
+     {
+      "seed": 1046,
+      "lines": 20000
+     },
+     {
+      "seed": 1047,
+      "lines": 20000
+     },
+     {
+      "seed": 1048,
+      "lines": 20000
+     },
+     {
+      "seed": 1049,
+      "lines": 20001
+     },
+     {
+      "seed": 1050,
+      "lines": 20000
+     },
+     {
+      "seed": 1051,
+      "lines": 20000
+     },
+     {
+      "seed": 1052,
+      "lines": 20000
+     },
+     {
+      "seed": 1053,
+      "lines": 20000
+     },
+     {
+      "seed": 1054,
+      "lines": 20000
+     },
+     {
+      "seed": 1055,
+      "lines": 20001
+     },
+     {
+      "seed": 1056,
+      "lines": 20000
+     },
+     {
+      "seed": 1057,
+      "lines": 20000
+     },
+     {
+      "seed": 1058,
+      "lines": 20000
+     },
+     {
+      "seed": 1059,
+      "lines": 20000
+     },
+     {
+      "seed": 1060,
+      "lines": 20000
+     },
+     {
+      "seed": 1061,
+      "lines": 20000
+     },
+     {
+      "seed": 1062,
+      "lines": 20000
+     },
+     {
+      "seed": 1063,
+      "lines": 20000
+     },
+     {
+      "seed": 1064,
+      "lines": 20000
+     },
+     {
+      "seed": 1065,
+      "lines": 20000
+     },
+     {
+      "seed": 1066,
+      "lines": 20000
+     },
+     {
+      "seed": 1067,
+      "lines": 20001
+     },
+     {
+      "seed": 1068,
+      "lines": 20000
+     },
+     {
+      "seed": 1069,
+      "lines": 20000
+     },
+     {
+      "seed": 1070,
+      "lines": 20000
+     },
+     {
+      "seed": 1071,
+      "lines": 20000
+     },
+     {
+      "seed": 1072,
+      "lines": 20000
+     },
+     {
+      "seed": 1073,
+      "lines": 20000
+     },
+     {
+      "seed": 1074,
+      "lines": 20000
+     },
+     {
+      "seed": 1075,
+      "lines": 20000
+     },
+     {
+      "seed": 1076,
+      "lines": 20000
+     },
+     {
+      "seed": 1077,
+      "lines": 20000
+     },
+     {
+      "seed": 1078,
+      "lines": 20000
+     },
+     {
+      "seed": 1079,
+      "lines": 20000
+     },
+     {
+      "seed": 1080,
+      "lines": 20000
+     },
+     {
+      "seed": 1081,
+      "lines": 20000
+     },
+     {
+      "seed": 1082,
+      "lines": 20000
+     },
+     {
+      "seed": 1083,
+      "lines": 20001
+     },
+     {
+      "seed": 1084,
+      "lines": 20000
+     },
+     {
+      "seed": 1085,
+      "lines": 20001
+     },
+     {
+      "seed": 1086,
+      "lines": 20000
+     },
+     {
+      "seed": 1087,
+      "lines": 20000
+     },
+     {
+      "seed": 1088,
+      "lines": 20000
+     },
+     {
+      "seed": 1089,
+      "lines": 20000
+     },
+     {
+      "seed": 1090,
+      "lines": 20000
+     },
+     {
+      "seed": 1091,
+      "lines": 20001
+     },
+     {
+      "seed": 1092,
+      "lines": 20001
+     },
+     {
+      "seed": 1093,
+      "lines": 20000
+     },
+     {
+      "seed": 1094,
+      "lines": 20000
+     },
+     {
+      "seed": 1095,
+      "lines": 20000
+     },
+     {
+      "seed": 1096,
+      "lines": 20000
+     },
+     {
+      "seed": 1097,
+      "lines": 20000
+     },
+     {
+      "seed": 1098,
+      "lines": 20000
+     },
+     {
+      "seed": 1099,
+      "lines": 20000
+     }
+    ],
+    "cap": 20000,
+    "mean": 20000.13,
+    "median": 20000.0,
+    "min": 20000,
+    "max": 20001,
+    "capped": 100,
+    "pieces_per_sec": 306.7,
+    "seconds": 16304.1
+   }
+  },
+  "duel": [
+   {
+    "a": "novice",
+    "b": "medium",
+    "duels": 20,
+    "wins_a": 0,
+    "wins_b": 20,
+    "draws": 0,
+    "share_b": 1.0,
+    "by_cap": 0
+   },
+   {
+    "a": "novice",
+    "b": "strong",
+    "duels": 20,
+    "wins_a": 0,
+    "wins_b": 20,
+    "draws": 0,
+    "share_b": 1.0,
+    "by_cap": 0
+   },
+   {
+    "a": "medium",
+    "b": "strong",
+    "duels": 20,
+    "wins_a": 20,
+    "wins_b": 0,
+    "draws": 0,
+    "share_b": 0.0,
+    "by_cap": 20
+   }
+  ],
+  "probe": {
+   "novice": [
+    {
+     "seed": 1000,
+     "cap": 200,
+     "result": {
+      "lines": 29,
+      "pieces": 115,
+      "score": 7736,
+      "capped": false,
+      "fours": 0
+     }
+    },
+    {
+     "seed": 1001,
+     "cap": 200,
+     "result": {
+      "lines": 33,
+      "pieces": 126,
+      "score": 9826,
+      "capped": false,
+      "fours": 0
+     }
+    },
+    {
+     "seed": 1002,
+     "cap": 200,
+     "result": {
+      "lines": 65,
+      "pieces": 206,
+      "score": 29632,
+      "capped": false,
+      "fours": 0
+     }
+    }
+   ],
+   "medium": [
+    {
+     "seed": 1000,
+     "cap": 200,
+     "result": {
+      "lines": 200,
+      "pieces": 503,
+      "score": 251762,
+      "capped": true,
+      "fours": 0
+     }
+    },
+    {
+     "seed": 1001,
+     "cap": 200,
+     "result": {
+      "lines": 200,
+      "pieces": 505,
+      "score": 253426,
+      "capped": true,
+      "fours": 0
+     }
+    },
+    {
+     "seed": 1002,
+     "cap": 200,
+     "result": {
+      "lines": 200,
+      "pieces": 501,
+      "score": 253899,
+      "capped": true,
+      "fours": 0
+     }
+    }
+   ],
+   "strong": [
+    {
+     "seed": 1000,
+     "cap": 200,
+     "result": {
+      "lines": 200,
+      "pieces": 501,
+      "score": 245708,
+      "capped": true,
+      "fours": 0
+     }
+    },
+    {
+     "seed": 1001,
+     "cap": 200,
+     "result": {
+      "lines": 200,
+      "pieces": 501,
+      "score": 245227,
+      "capped": true,
+      "fours": 0
+     }
+    },
+    {
+     "seed": 1002,
+     "cap": 200,
+     "result": {
+      "lines": 200,
+      "pieces": 502,
+      "score": 251182,
+      "capped": true,
+      "fours": 0
+     }
+    }
+   ]
+  },
+  "hard": {
+   "ceiling": 6,
+   "pieces": "uniform",
+   "levels": {
+    "novice": {
+     "games": 100,
+     "cap": 3000,
+     "mean": 8.42,
+     "median": 7.0,
+     "min": 0,
+     "max": 23,
+     "capped": 0,
+     "pieces_per_sec": 1447.5
+    },
+    "medium": {
+     "games": 100,
+     "cap": 3000,
+     "mean": 33.49,
+     "median": 20.0,
+     "min": 0,
+     "max": 168,
+     "capped": 0,
+     "pieces_per_sec": 804.8
+    },
+    "strong": {
+     "games": 100,
+     "cap": 3000,
+     "mean": 173.73,
+     "median": 100.5,
+     "min": 0,
+     "max": 851,
+     "capped": 0,
+     "pieces_per_sec": 205.5
+    }
+   }
+  },
+  "seconds": 20872.6
  }
 }

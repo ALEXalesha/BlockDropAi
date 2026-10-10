@@ -144,6 +144,7 @@ def passport_args(sub):
     p.add_argument("--strong-cap", type=int, default=20000, help="предел линий сильного")
     p.add_argument("--duels", type=int, default=20, help="дуэлей на пару уровней")
     p.add_argument("--duel-pieces", type=int, default=1500)
+    p.add_argument("--hard-games", type=int, default=100, help="партий трудной проверки на уровень")
     p.add_argument("--workers", type=int, default=2)
     p.add_argument("--trial", action="store_true", help="пробы и прогноз времени")
 
@@ -192,7 +193,7 @@ def run_passport(a):
     from game.train import passport as PP
     model = PP.load_model()
     log = TrainLog(os.path.join(a.run, "passport.log"))
-    todo = PP.jobs(a.games, a.duels, a.cap, a.duel_pieces, a.strong_cap)
+    todo = PP.jobs(a.games, a.duels, a.cap, a.duel_pieces, a.strong_cap, a.hard_games)
     if a.trial:
         probes = [j for j in todo if j["kind"] == "probe"]
         recs = PP.run_jobs(model, probes, a.run, workers=1, log=log)
@@ -220,7 +221,9 @@ def run_passport(a):
     for lv, s in model["passport"]["levels"].items():
         print(f"{lv}: среднее {s['mean']}, медиана {s['median']}, до предела {s['capped']}/{len(s['games'])}")
     for d in model["passport"]["duel"]:
-        print(f"дуэль {d['a']}-{d['b']}: {d['wins_a']}:{d['wins_b']}, ничьих {d['draws']}")
+        print(f"дуэль {d['a']}-{d['b']}: {d['wins_a']}:{d['wins_b']}, ничьих {d['draws']}, до предела {d['by_cap']}")
+    for lv, s in model["passport"]["hard"]["levels"].items():
+        print(f"трудная {lv}: среднее {s['mean']}, медиана {s['median']}, до предела {s['capped']}")
     return 0
 
 

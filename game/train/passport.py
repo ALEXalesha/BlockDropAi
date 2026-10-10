@@ -7,6 +7,10 @@
 - Дуэли: уровни парами, у обоих одна очередь фигур, ходят по фигуре по очереди (кто
   первый - чередуется), очищенные линии шлют мусор (как в окне). Партия до проигрыша или
   до duel_pieces фигур у каждого; тогда побеждает тот, кто прислал больше мусора.
+- Трудная проверка: на настоящем поле с мешком сильный и средний не проигрывают вовсе
+  (все партии - до предела), поэтому разница уровней меряется ещё и в трудных
+  условиях: фигуры равновероятные, без мешка, а поле укорочено - стопка выше HARD_CEILING
+  рядов означает конец партии.
 - Пробы: первые партии каждого уровня с маленьким пределом - их тесты пересчитывают до
   линии.
 
@@ -28,6 +32,8 @@ PAIRS = (("novice", "medium"), ("novice", "strong"), ("medium", "strong"))
 SEED0 = 1000
 PROBE_GAMES = 3
 PROBE_CAP = 200
+HARD_CEILING = 6
+HARD_CAP = 3000
 
 
 def load_model(path=MODEL_PATH):
@@ -42,6 +48,10 @@ def level_agent(level, model):
 
 def level_game(model, level, seed, cap):
     return P.play_game(level_agent(level, model), seed, max_lines=cap)
+
+
+def hard_game(model, level, seed, ceiling=HARD_CEILING, cap=HARD_CAP):
+    return P.play_game(level_agent(level, model), seed, max_lines=cap, randomizer="uniform", ceiling=ceiling)
 
 
 def duel(model, a, b, seed, max_pieces=1500):
@@ -89,8 +99,8 @@ def level_caps(cap, strong_cap=None):
     return {lv: (strong_cap or cap) if lv == "strong" else cap for lv in LEVELS}
 
 
-def jobs(games, duels, cap, duel_pieces, strong_cap=None):
-    """Работы паспорта по порядку: пробы, партии уровней, дуэли."""
+def jobs(games, duels, cap, duel_pieces, strong_cap=None, hard_games=0):
+    """Работы паспорта по порядку: пробы, партии уровней, дуэли, трудная проверка."""
     caps = level_caps(cap, strong_cap)
     out = []
     for level in LEVELS:
@@ -102,6 +112,10 @@ def jobs(games, duels, cap, duel_pieces, strong_cap=None):
     for a, b in PAIRS:
         for i in range(duels):
             out.append({"kind": "duel", "a": a, "b": b, "seed": SEED0 + i, "pieces": duel_pieces})
+    for level in LEVELS:
+        for i in range(hard_games):
+            out.append({"kind": "hard", "level": level, "seed": SEED0 + i, "cap": HARD_CAP,
+                        "ceiling": HARD_CEILING})
     return out
 
 
@@ -124,6 +138,8 @@ def do_job(j, model=None):
     t0 = time.perf_counter()
     if j["kind"] == "duel":
         r = duel(model, j["a"], j["b"], j["seed"], j["pieces"])
+    elif j["kind"] == "hard":
+        r = hard_game(model, j["level"], j["seed"], j["ceiling"], j["cap"])
     elif j["kind"] == "cmp":
         r = P.play_game(_cmp_agent(j, model), j["seed"], max_lines=j["cap"])
     else:
@@ -168,10 +184,10 @@ def run_jobs(model, todo, run, workers=2, log=None):
     return [done[job_key(j)] for j in todo]
 
 
-def build(model, records, games, cap, duels, duel_pieces, strong_cap=None):
+def build(model, records, games, cap, duels, duel_pieces, strong_cap=None):  # noqa: C901
     """Паспорт из итогов работ."""
     caps = level_caps(cap, strong_cap)
-    by = {"probe": {}, "game": {}, "duel": {}}
+    by = {"probe": {}, "game": {}, "duel": {}, "hard": {}}
     for rec in records:
         j = rec["job"]
         key = (j["a"], j["b"]) if j["kind"] == "duel" else j["level"]
@@ -195,10 +211,18 @@ def build(model, records, games, cap, duels, duel_pieces, strong_cap=None):
         duel_out.append({"a": a, "b": b, "duels": len(recs), "wins_a": wins[a], "wins_b": wins[b],
                          "draws": wins["draw"], "share_b": round((wins[b] + wins["draw"] / 2) / n, 3),
                          "by_cap": sum(1 for r in recs if r["result"]["by_cap"])})
+    hard = {}
+    for level in LEVELS:
+        recs = sorted(by["hard"].get(level, []), key=lambda r: r["job"]["seed"])
+        if recs:
+            res = [r["result"] for r in recs]
+            secs = sum(r["seconds"] for r in recs)
+            hard[level] = summarize(res, HARD_CAP, secs, sum(r["pieces"] for r in res))
     probe = {lv: [{"seed": r["job"]["seed"], "cap": r["job"]["cap"], "result": r["result"]}
                   for r in sorted(by["probe"].get(lv, []), key=lambda r: r["job"]["seed"])] for lv in LEVELS}
     return {"caps": caps, "games": games, "duels": duels, "duel_pieces": duel_pieces,
             "levels": levels, "duel": duel_out, "probe": probe,
+            "hard": {"ceiling": HARD_CEILING, "pieces": "uniform", "levels": hard},
             "seconds": round(sum(r["seconds"] for r in records), 1)}
 
 

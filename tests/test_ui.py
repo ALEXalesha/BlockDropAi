@@ -311,3 +311,11 @@ def test_ai_mode_thoughts_visible_most_of_the_time(app, win):
     g.change("show_thoughts", False)
     # до починки было ~0.09; запас на загруженный ПК
     assert seen / total > 0.4, (seen, total)
+
+
+def test_speed_buttons_follow_setting(app, win):
+    g = win.game
+    g.change("speed", "max")
+    assert g.play.speed_buttons["max"].isChecked()
+    g.change("speed", "real")
+    assert g.play.speed_buttons["real"].isChecked() and not g.play.speed_buttons["max"].isChecked()

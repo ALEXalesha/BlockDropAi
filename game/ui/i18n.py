@@ -25,11 +25,17 @@ RU = {
     "col_mode": "Режим", "col_games": "Партий", "col_best_lines": "Лучшее по линиям",
     "col_best_score": "Лучшее по очкам", "col_wins": "Побед", "col_losses": "Поражений",
     "passport": "Паспорт модели", "not_ready": "Паспорт ещё не посчитан.",
-    "passport_text": "{games} партий на уровень с зёрнами, партия до конца игры или до предела линий ({cap}) "
-                     "(сильный ИИ иначе играет бесконечно). Обучение: метод перекрёстной энтропии, "
+    "passport_text": "{games} партий на уровень с зёрнами, партия до конца игры или до предела линий: {cap}. "
+                     "Без предела сильный ИИ играл бы бесконечно. Обучение: метод перекрёстной энтропии, "
                      "{gens} поколений, {time}.",
     "col_level": "Уровень", "col_mean": "Среднее линий", "col_median": "Медиана",
     "col_capped": "До предела", "duels": "Дуэли уровней", "col_pair": "Пара", "col_result": "Счёт",
+    "hard": "Трудная проверка",
+    "hard_text": "Фигуры равновероятные, без мешка, поле укорочено до {rows} рядов; {games} партий на "
+                 "уровень. На обычном поле средний и сильный не проигрывают вовсе - разница видна здесь.",
+    "duels_text": "{n} дуэлей на пару, у обоих одна очередь фигур, до проигрыша или {pieces} фигур. "
+                  "Если никто не проиграл, побеждает тот, кто прислал больше мусора.",
+    "col_by_cap": "До предела фигур",
     "evolution": "Эволюция весов", "evolution_hint": "Среднее число линий популяции по поколениям "
                                                      "(обучение на укороченном поле).",
     "settings_title": "Настройки",
@@ -72,11 +78,17 @@ EN = {
     "col_mode": "Mode", "col_games": "Games", "col_best_lines": "Best lines",
     "col_best_score": "Best score", "col_wins": "Wins", "col_losses": "Losses",
     "passport": "Model passport", "not_ready": "The passport has not been computed yet.",
-    "passport_text": "{games} seeded games per level, each until game over or the line cap ({cap}) "
-                     "(otherwise the strong AI plays forever). Training: cross-entropy method, "
+    "passport_text": "{games} seeded games per level, each until game over or the line cap: {cap}. "
+                     "Without a cap the strong AI would play forever. Training: cross-entropy method, "
                      "{gens} generations, {time}.",
     "col_level": "Level", "col_mean": "Mean lines", "col_median": "Median",
     "col_capped": "Hit the cap", "duels": "Level duels", "col_pair": "Pair", "col_result": "Score",
+    "hard": "Hard test",
+    "hard_text": "Pieces are uniformly random, no bag, and the board is cut to {rows} rows; {games} games per "
+                 "level. On the normal board medium and strong never lose, so the difference shows here.",
+    "duels_text": "{n} duels per pair, both sides get the same pieces, until one loses or {pieces} pieces. "
+                  "If nobody loses, whoever sent more garbage wins.",
+    "col_by_cap": "Hit the piece cap",
     "evolution": "Weight evolution", "evolution_hint": "Mean lines of the population per generation "
                                                       "(training on a shortened board).",
     "settings_title": "Settings",

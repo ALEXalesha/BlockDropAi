@@ -351,3 +351,13 @@ def test_random_play_keeps_invariants(seed):
     assert cells == 4 * g.pieces - 10 * g.lines + 9 * g.garbage_rows
     assert g.lines == sum(k * c for k, c in enumerate(g.cleared))
     assert g.pieces == sum(g.cleared)
+
+
+def test_uniform_randomizer_is_seeded_and_not_a_bag():
+    a = Game(seed=3, randomizer="uniform")
+    b = Game(seed=3, randomizer="uniform")
+    seq_a = [a.bag.next() for _ in range(70)]
+    assert seq_a == [b.bag.next() for _ in range(70)]
+    # у равновероятных фигур бывают повторы внутри семёрки - у мешка не бывает
+    assert any(len(set(seq_a[k:k + 7])) < 7 for k in range(0, 70, 7))
+    assert set(seq_a) == set(range(7))

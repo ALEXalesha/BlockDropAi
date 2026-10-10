@@ -49,6 +49,30 @@ The program uses the CEM weights.
 - **medium**: final weights, no look-ahead;
 - **strong**: final weights, look-ahead at the next piece (two moves deep) and hold.
 
+## AI strength (model passport)
+
+`python -m game.train passport`, seeded games, stored in `game/models/blockdrop-cem.json`; the tests replay a small sample.
+
+**Normal game** (bag of 7, 20 rows), 100 games per level, each until game over or the line cap:
+
+| Level | Mean lines | Median | Reached the cap |
+|---|---|---|---|
+| Novice | 47.7 | 43.5 | 0 / 100 (cap 10 000) |
+| Medium | 10 000 | 10 000 | 100 / 100 (cap 10 000) |
+| Strong | 20 000 | 20 000 | 100 / 100 (cap 20 000) |
+
+Medium and strong never lose on the normal board, so the caps decide those rows.
+
+**Hard test** (uniformly random pieces without the bag, board cut to 6 rows), 100 games per level:
+
+| Level | Mean lines | Median |
+|---|---|---|
+| Novice | 8.4 | 7 |
+| Medium | 33.5 | 20 |
+| Strong | 173.7 | 100.5 |
+
+**Level duels**, 20 per pair, same pieces for both, until one loses or 1 500 pieces each: medium beats novice 20 : 0, strong beats novice 20 : 0. Medium against strong: all 20 duels reached the piece cap without a loss, and medium sent slightly more garbage (for example 103 rows against 99), so it is listed as 20 : 0. The weights were trained to survive, not to attack, and look-ahead does not add attack.
+
 ## Keys
 
 Arrows move and rotate, Space is hard drop, Z rotates counter-clockwise, C is hold, Esc pauses. Every key can be reassigned in Settings, together with the auto-repeat delay and rate (DAS/ARR).

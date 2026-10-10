@@ -146,10 +146,13 @@ class Agent:
         return Decision(path, best[2], best[0], top, best[3], self.lookahead)
 
 
-def play_game(agent, seed, max_lines=10 ** 9, max_pieces=10 ** 9):
-    """Партия ИИ в настоящей игре без времени: только нажатия. Для паспорта и тестов."""
-    g = B.Game(seed=seed, gravity=False)
+def play_game(agent, seed, max_lines=10 ** 9, max_pieces=10 ** 9, randomizer="bag", ceiling=None):
+    """Партия ИИ в настоящей игре без времени: только нажатия. Для паспорта и тестов.
+    ceiling - укороченное поле: стопка выше стольких рядов - конец партии."""
+    g = B.Game(seed=seed, gravity=False, randomizer=randomizer)
     while not g.over and g.lines < max_lines and g.pieces < max_pieces:
+        if ceiling is not None and B.stack_height(g.board) > ceiling:
+            break
         d = agent.choose(observe(g))
         if d is None:
             break

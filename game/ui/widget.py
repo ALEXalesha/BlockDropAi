@@ -6,21 +6,19 @@ ctx и меняются на лету по ctx.changed. Файлы - тольк�
 Часы: таймер окна лишь будит логику раз в ~16 мс, а сколько прошло - берётся из
 time.monotonic; скорость игры от частоты кадров не зависит.
 """
-import json
-import os
 import random
 import time
 
 from PySide6.QtCore import QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QKeySequence, QPainter, QPen, QPolygonF
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QFrame, QGridLayout, QHBoxLayout, QHeaderView,
-                               QLabel, QPushButton, QScrollArea, QSlider, QStackedWidget, QTableWidget,
+                               QLabel, QScrollArea, QSlider, QStackedWidget, QTableWidget,
                                QTableWidgetItem, QVBoxLayout, QWidget)
 
 from aikit import settings as st
 from aikit import theme
 from aikit.storage import load_json, save_json
-from aikit.widgets import Combo, button, card, label, restyle, segmented
+from aikit.widgets import Combo, button, card, label, segmented
 from game.ai import player as P
 from game.core import blocks as B
 from game.train import passport as PP
@@ -466,7 +464,7 @@ class StatsPage(QWidget):
         top.addWidget(self.menu_button)
         col.addLayout(top)
         self.sections = {}
-        for key in ("your_records", "ai_records", "passport", "duels", "evolution"):
+        for key in ("your_records", "ai_records", "passport", "hard", "duels", "evolution"):
             box = card()
             lay = QVBoxLayout(box)
             lay.setContentsMargins(18, 14, 18, 14)
@@ -489,12 +487,6 @@ class StatsPage(QWidget):
         rows.append([t("mode_solo"), solo["games"], number(solo["best_lines"]), number(solo["best_score"])])
         text.setText("")
         fill(tw, [t("col_mode"), t("col_games"), t("col_best_lines"), t("col_best_score")], rows)
-        duel_rows = []
-        for lv in LEVELS:
-            e = gw.ctx.stats.entry("duel/" + lv)
-            duel_rows.append([f"{t('mode_duel')} · {t(lv)}", e["games"], e["wins"], e["losses"]])
-        tw2 = self.sections["your_records"][2]
-        fill(tw2, [t("col_mode"), t("col_games"), t("col_best_lines"), t("col_best_score")], rows)
         title, text, tw = self.sections["ai_records"]
         title.setText(t("ai_records"))
         ai_rows = []
@@ -503,18 +495,31 @@ class StatsPage(QWidget):
             ai_rows.append([f"{t('mode_ai')} · {t(lv)}", e["games"], number(e["best_lines"]), number(e["best_score"])])
         text.setText("")
         fill(tw, [t("col_mode"), t("col_games"), t("col_best_lines"), t("col_best_score")], ai_rows)
-        # дуэли игрока - в той же карточке, что и рекорды, отдельной таблицей не перегружаем
         title, text, tw = self.sections["duels"]
         title.setText(t("duels"))
         pp = gw.model.get("passport")
-        rows = [[r[0], r[1], r[2], r[3]] for r in duel_rows]
-        heads = [t("col_mode"), t("col_games"), t("col_wins"), t("col_losses")]
+        rows = [[f"{t('mode_duel')} · {t(lv)} ({t('you')})", gw.ctx.stats.entry("duel/" + lv)["games"],
+                 f"{gw.ctx.stats.entry('duel/' + lv)['wins']} : {gw.ctx.stats.entry('duel/' + lv)['losses']}", ""]
+                for lv in LEVELS]
         if pp:
+            text.setText(t("duels_text", n=pp["duels"], pieces=number(pp["duel_pieces"])))
             for d in pp["duel"]:
                 rows.append([f"{t(d['a'])} – {t(d['b'])}", d["duels"], f"{d['wins_a']} : {d['wins_b']}",
-                             d["draws"]])
-        text.setText("")
-        fill(tw, heads, rows)
+                             d["by_cap"]])
+        else:
+            text.setText("")
+        fill(tw, [t("col_pair"), t("col_games"), t("col_result"), t("col_by_cap")], rows)
+        title, text, tw = self.sections["hard"]
+        title.setText(t("hard"))
+        hard = (pp or {}).get("hard", {})
+        if hard.get("levels"):
+            n = next(iter(hard["levels"].values()))["games"]
+            text.setText(t("hard_text", rows=hard["ceiling"], games=n))
+            fill(tw, [t("col_level"), t("col_mean"), t("col_median"), t("col_capped")],
+                 [[t(lv), f"{s['mean']:.1f}", f"{s['median']:g}", s["capped"]] for lv, s in hard["levels"].items()])
+        else:
+            text.setText(t("not_ready"))
+            fill(tw, [t("col_level"), t("col_mean"), t("col_median"), t("col_capped")], [])
         title, text, tw = self.sections["passport"]
         title.setText(t("passport"))
         tr = gw.model.get("training", {})
@@ -753,8 +758,10 @@ class GameWidget(QWidget):
         if key in ("das_ms", "arr_ms") and self.human is not None:
             self.human.das = self.settings["das_ms"] / 1000
             self.human.arr = self.settings["arr_ms"] / 1000
-        if key == "speed" and self.mode == "ai" and self.drivers:
-            self._set_speed(self.drivers[0])
+        if key == "speed":
+            self.play.speed_buttons[value].setChecked(True)
+            if self.mode == "ai" and self.drivers:
+                self._set_speed(self.drivers[0])
         if key == "show_thoughts":
             self.thought = None
             self._update_outlines()
@@ -1078,5 +1085,3 @@ class GameWidget(QWidget):
         from PySide6.QtCore import QSize
         return QSize(900, 700)
 
-
-__all__ = ["GameWidget", "json", "os", "QPushButton", "restyle"]
