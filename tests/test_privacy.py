@@ -54,7 +54,7 @@ def test_no_private_strings_in_tracked_files():
 
 # spec §0: товарный знак не публикуется. Исключения - описание и план (docs/spec.md,
 # docs/plan.md): там разобрано само название, и в публикацию на GitHub они не идут -
-# tools/publish_github.sh вырезает их из всей истории.
+# tools/publish.conf (DROP_PATHS) вырезает их из всей истории.
 NOT_PUBLISHED = ("docs/spec.md", "docs/plan.md")
 
 
@@ -77,6 +77,6 @@ def test_no_trademark_in_published_files():
 
 
 def test_publish_script_cuts_unpublished_docs():
-    src = open(os.path.join(ROOT, "tools", "publish_github.sh"), encoding="utf-8").read()
+    src = open(os.path.join(ROOT, "tools", "publish.conf"), encoding="utf-8").read()
     for f in NOT_PUBLISHED:
         assert f in src
