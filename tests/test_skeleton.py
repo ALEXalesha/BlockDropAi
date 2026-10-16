@@ -22,4 +22,7 @@ def test_no_trademark_in_public_names():
 
 
 def test_aikit_is_a_copy_with_version():
-    assert open(os.path.join(ROOT, "aikit", "VERSION"), encoding="utf-8").read().strip() == "0.1.0"
+    # копия общего набора PythonAiGames/aikit: версия вида x.y.z, не ниже 0.2 (графики aikit.charts)
+    v = open(os.path.join(ROOT, "aikit", "VERSION"), encoding="utf-8").read().strip()
+    assert tuple(int(x) for x in v.split(".")) >= (0, 2, 0) and len(v.split(".")) == 3, v
+    assert os.path.exists(os.path.join(ROOT, "aikit", "charts.py"))

@@ -99,3 +99,14 @@ MUTANTS += [
     ("session: мусор не уходит", SE, "                other.receive_garbage(new)", "                pass", TS),
     ("session: без перепланирования", SE, "                self._plan(now, replan=True)", "                pass", TS),
 ]
+
+# графики статистики (aikit.charts)
+W = "game/ui/widget.py"
+TSC = "tests/test_stats_charts.py"
+MUTANTS += [
+    ("charts: дуэль не в журнале", W, '            self.history.record({"mode": "duel"', '            ({"mode": "duel"', TSC),
+    ("charts: одиночная не в журнале", W, '                self.history.record({"mode": "solo"', '                ({"mode": "solo"', TSC),
+    ("charts: одиночные в доле побед", W, 'enumerate(x for x in games if x.get("mode") == "duel")]', 'enumerate(games)]', TSC),
+    ("charts: рекорд одиночной не копится", W, '        c.set_points(gamelog.series(solo, "score"), gamelog.best_curve(solo, "score"))',
+     '        c.set_points(gamelog.series(solo, "score"), gamelog.series(solo, "score"))', TSC),
+]

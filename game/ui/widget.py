@@ -16,7 +16,8 @@ from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QFrame, QGridLayout
                                QTableWidgetItem, QVBoxLayout, QWidget)
 
 from aikit import settings as st
-from aikit import theme
+from aikit import gamelog, theme
+from aikit.charts import GameCharts, LineChart
 from aikit.storage import load_json, save_json
 from aikit.widgets import Combo, button, card, label, segmented
 from game.ai import player as P
@@ -476,10 +477,61 @@ class StatsPage(QWidget):
             lay.addWidget(widget)
             col.addWidget(box)
             self.sections[key] = (title, text, widget)
+            if key == "your_records":
+                col.addWidget(self._charts_card())
         col.addStretch(1)
+
+    def _charts_card(self):
+        """Графики (правило автора 10.10 - графики в статистике всех игр с ИИ): дуэли против ИИ -
+        доля побед, итоги по уровням, линии за дуэль, очки с рекордом; одиночная игра - очки с
+        рекордом; паспорт - среднее число линий каждого уровня."""
+        box = card()
+        lay = QVBoxLayout(box)
+        lay.setContentsMargins(18, 14, 18, 14)
+        lay.setSpacing(10)
+        self.charts_title = label("", "section")
+        lay.addWidget(self.charts_title)
+        self.charts = GameCharts(LEVELS, length_key="lines", score_key="score", passport=True)
+        self.charts.passport.percent = False
+        self.solo_chart = self.charts.add(LineChart(percent=False))
+        self.solo_chart.color_key, self.solo_chart.second_key = "accent", "warn"
+        self.solo_chart.stepped = {1}
+        self.solo_chart.integer = True
+        lay.addWidget(self.charts)
+        return box
+
+    def refresh_charts(self):
+        gw, t = self.gw, self.gw.t
+        self.charts_title.setText(t("charts"))
+        self.charts.set_theme(gw.ctx.theme)
+        games = gw.history.games
+        # свои номера у дуэлей и у одиночных игр: в общем журнале они перемешаны
+        duels = [dict(g, n=i + 1) for i, g in enumerate(x for x in games if x.get("mode") == "duel")]
+        solo = [dict(g, n=i + 1) for i, g in enumerate(x for x in games if x.get("mode") == "solo")]
+        # паспорт - проверка на трудном поле: там у всех уровней один предел и средние сравнимы
+        # (в обычной проверке средний и сильный упираются в разные пределы 10 000 и 20 000)
+        hard = ((gw.model.get("passport") or {}).get("hard") or {}).get("levels") or {}
+        passport = None
+        if hard:
+            lv = [x for x in LEVELS if x in hard]
+            passport = ([t(x) for x in lv], [(t("ch_mean_lines"), "accent", [hard[x]["mean"] for x in lv])])
+        self.charts.refresh(duels, gw.ctx.lang, {x: t(x) for x in LEVELS},
+                            labels={"share": t("ch_share"), "share_empty": t("ch_share_empty"),
+                                    "levels": t("ch_levels"), "game_no": t("ch_duel_no"),
+                                    "length": t("ch_lines"), "length_empty": t("ch_lines_empty"),
+                                    "length_y": t("ch_lines_y"), "score": t("ch_score"),
+                                    "score_empty": t("ch_score_empty"), "score_y": t("ch_points"),
+                                    "points": t("ch_points"), "passport": t("ch_passport"),
+                                    "passport_empty": t("not_ready")},
+                            passport=passport)
+        c = self.solo_chart
+        c.set_texts(t("ch_solo"), t("ch_solo_empty"), t("ch_game_no"), t("ch_points"))
+        c.names = (t("ch_points"), t("ch_record"))
+        c.set_points(gamelog.series(solo, "score"), gamelog.best_curve(solo, "score"))
 
     def refresh(self):
         gw, t = self.gw, self.gw.t
+        self.refresh_charts()
         title, text, tw = self.sections["your_records"]
         title.setText(t("your_records"))
         rows = []
@@ -728,6 +780,7 @@ class GameWidget(QWidget):
         lay.addWidget(self.stack)
         self.menu = MenuPage(self)
         self.play = PlayPage(self)
+        self.history = gamelog.GameLog(ctx.file("games.json"))      # журнал для графиков
         self.stats = StatsPage(self)
         self.settings_page = SettingsPage(self)
         self.pages = {"menu": self.menu, "play": self.play, "stats": self.stats, "settings": self.settings_page}
@@ -1003,12 +1056,18 @@ class GameWidget(QWidget):
                 return
             result = {"a": "win", "b": "loss", "draw": "draw"}[w]
             self.ctx.stats.record("duel/" + self.level, result)
+            me = self.games[0]
+            self.history.record({"mode": "duel", "level": self.level, "outcome": result,
+                                 "lines": me.lines, "score": me.score})
             self.ctx.sound.play("win" if result == "win" else "loss" if result == "loss" else "draw")
             self._finish({"win": "duel_win", "loss": "duel_loss", "draw": "duel_draw"}[result])
         elif self.games and self.games[0].over:
             g = self.games[0]
             key = "solo" if self.mode == "solo" else "ai/" + self.level
             self.records.add(key, g.lines, g.score)
+            if self.mode == "solo":                     # одиночная игра всегда кончается «стаканом»
+                self.history.record({"mode": "solo", "level": "solo", "outcome": "loss",
+                                     "lines": g.lines, "score": g.score})
             self.ctx.sound.play("loss" if self.mode == "solo" else "draw")
             self._finish("game_over")
 

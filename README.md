@@ -73,6 +73,12 @@ Medium and strong never lose on the normal board, so the caps decide those rows.
 
 **Level duels**, 20 per pair, same pieces for both, until one loses or 1 500 pieces each: medium beats novice 20 : 0, strong beats novice 20 : 0. Medium against strong: all 20 duels reached the piece cap without a loss, and medium sent slightly more garbage (for example 103 rows against 99), so it is listed as 20 : 0. The weights were trained to survive, not to attack, and look-ahead does not add attack.
 
+## Statistics charts
+
+Charts from the shared `aikit.charts`: your share of wins in duels with the AI (last 20 and all), duels by AI level, your lines and score per duel with the record, the solo score with the record, and the AI strength from the passport (mean lines on the hard board, where all levels share one limit). With no games yet a chart says in words what will appear.
+
+<img src="docs/preview_charts.png" width="880" alt="Statistics charts: share of duel wins, duels by AI level, lines per duel, score and record, AI strength, solo score and record">
+
 ## Keys
 
 Arrows move and rotate, Space is hard drop, Z rotates counter-clockwise, C is hold, Esc pauses. Every key can be reassigned in Settings, together with the auto-repeat delay and rate (DAS/ARR).

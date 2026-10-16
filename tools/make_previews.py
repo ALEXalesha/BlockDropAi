@@ -32,6 +32,24 @@ def until(app, cond, limit=60):
         time.sleep(0.005)
 
 
+def sample_games(g):
+    """Журнал для кадра графиков: 14 дуэлей с ИИ разных уровней и 8 одиночных игр."""
+    import random
+    rng = random.Random(11)
+    for k in range(14):
+        level = ("novice", "medium", "strong")[k % 3]
+        outcome = rng.choices(("win", "loss", "draw"), ((0.7, 0.45, 0.25)[k % 3], 0.5, 0.05))[0]
+        lines = rng.randint(6, 40)
+        g.ctx.stats.record("duel/" + level, outcome)
+        g.history.record({"mode": "duel", "level": level, "outcome": outcome, "lines": lines,
+                          "score": lines * rng.randint(60, 110)})
+    for k in range(8):
+        lines = rng.randint(10, 90)
+        g.records.add("solo", lines, lines * rng.randint(70, 120))
+        g.history.record({"mode": "solo", "level": "solo", "outcome": "loss", "lines": lines,
+                          "score": lines * rng.randint(70, 120)})
+
+
 def main(out):
     from PySide6.QtWidgets import QApplication
 
@@ -74,9 +92,15 @@ def main(out):
             spin(app, 0.35)
         spin(app, 1.0)
         shots.append(("preview_duel" + sfx, window.grab()))
+        if not g.history.games:
+            sample_games(g)
         g.show_page("stats")
         spin(app, 0.2)
         shots.append(("preview_stats" + sfx, window.grab()))
+        card = g.stats.charts.parentWidget()
+        h = card.heightForWidth(1180)
+        card.resize(1180, h if h > 0 else card.sizeHint().height())
+        shots.append(("preview_charts" + sfx, card.grab()))
     ctx.set_theme("dark")
     for name, pix in shots:
         pix.save(os.path.join(out, name + ".png"))
