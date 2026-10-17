@@ -140,3 +140,17 @@ MUTANTS += [
     ("menu: заголовок не прописными", MN, '        self.title.setText(t("app_title").upper())',
      '        self.title.setText(t("app_title"))', TM + " -k own_style"),
 ]
+
+# одиночная игра с подсказкой или «Мыслями ИИ» - не в рекорды (решение автора 17.10)
+TUA = "tests/test_ui.py -k 'assisted or solo_game_over'"
+MUTANTS += [
+    ("assisted: подсказка не помечает", WU, "            self.assisted = True        # с подсказкой", "            pass        # с подсказкой", TUA),
+    ("assisted: мысли с начала не помечают", WU, '        self.assisted = self.mode == "solo" and s["show_thoughts"]',
+     "        self.assisted = False", TUA),
+    ("assisted: мысли посреди не помечают", WU, "                self.assisted = True    # «Мысли ИИ» посреди", "                pass    # «Мысли ИИ» посреди", TUA),
+    ("assisted: всё равно в рекорды", WU, "            if not helped:                              # с подсказкой", "            if True:                              # с подсказкой", TUA),
+    ("assisted: всё равно в график", WU, '            if self.mode == "solo" and not helped:', '            if self.mode == "solo":', TUA),
+    ("assisted: в конце обычная строка", WU, '            self._finish("game_over_assisted" if helped else "game_over")', '            self._finish("game_over")', TUA),
+    ("assisted: помощь тянется в следующую игру", WU, '        self.assisted = self.mode == "solo" and s["show_thoughts"]',
+     '        self.assisted = self.assisted or (self.mode == "solo" and s["show_thoughts"])', TUA),
+]

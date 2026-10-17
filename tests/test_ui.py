@@ -338,3 +338,52 @@ def test_speed_buttons_follow_setting(app, win):
     assert g.play.speed_buttons["max"].isChecked()
     g.change("speed", "real")
     assert g.play.speed_buttons["real"].isChecked() and not g.play.speed_buttons["max"].isChecked()
+
+
+def _drop_to_the_end(app, g):
+    game = g.games[0]
+    for _ in range(300):
+        if game.over:
+            break
+        key(g, Qt.Key.Key_Space)
+    assert wait(app, lambda: g.finished, 5)
+
+
+@pytest.mark.parametrize("how", ["hint", "thoughts_from_start", "thoughts_midgame"])
+def test_assisted_solo_game_is_not_a_record(app, win, how):
+    """Решение автора 17.10: одиночная игра с «Подсказкой» или «Мыслями ИИ» в рекорды и график не
+    идёт (как в Сапёре), и в конце игры это сказано строкой статуса; без помощи - идёт."""
+    g = win.game
+    g.change("mode", "solo")
+    g.change("show_thoughts", how == "thoughts_from_start")
+    g.start_game(seed=1)
+    if how == "hint":
+        g.show_hint()
+    elif how == "thoughts_midgame":
+        key(g, Qt.Key.Key_Space)
+        g.change("show_thoughts", True)
+    assert g.assisted
+    assert RU["assisted_note"] in g.play.info.text()            # видно и во время игры
+    _drop_to_the_end(app, g)
+    assert g.records.entry("solo")["games"] == 0
+    assert not [x for x in g.history.games if x["mode"] == "solo"]
+    assert g.play.status.text() == RU["game_over_assisted"]
+    assert g.play.cols[0].board.banner == RU["game_over"]
+    g.change("show_thoughts", False)
+    g.start_game(seed=2)                                         # следующая без помощи - в рекорды
+    assert not g.assisted
+    _drop_to_the_end(app, g)
+    assert g.records.entry("solo")["games"] == 1
+    assert len([x for x in g.history.games if x["mode"] == "solo"]) == 1
+    assert g.play.status.text() == RU["game_over"]
+
+
+def test_ai_watch_with_thoughts_still_records_ai_result(app, win):
+    """«Мысли ИИ» в режиме «Играет ИИ» - это показ, рекорды ИИ (ai/уровень) пишутся как раньше."""
+    g = win.game
+    g.change("mode", "ai")
+    g.change("speed", "max")
+    g.change("show_thoughts", True)
+    g.start_game(seed=1)
+    assert not g.assisted
+    g.change("show_thoughts", False)

@@ -83,6 +83,8 @@ A start menu of its own - a **neon arcade hall**: a perspective floor grid runs 
 
 Charts from the shared `aikit.charts`: your share of wins in duels with the AI (last 20 and all), duels by AI level, your lines and score per duel with the record, the solo score with the record, and the AI strength from the passport (mean lines on the hard board, where all levels share one limit). With no games yet a chart says in words what will appear.
 
+A solo game with a Hint or AI thoughts does not count for records or charts (as in Minesweeper): the side panel reminds you during the game, and at the end the status says so.
+
 <img src="docs/preview_charts.png" width="880" alt="Statistics charts: share of duel wins, duels by AI level, lines per duel, score and record, AI strength, solo score and record">
 
 ## Keys
@@ -113,7 +115,7 @@ python -m game.train passport --workers 2
 
 ## Tests
 
-`python -m pytest -q`: rules, search, features, training, the AI player, the passport and the window (Qt offscreen, no visible windows). `python tools/mutate.py` breaks the code on purpose and checks that the tests catch every break. 283 checks and 62 mutants, all caught. Menu laws (`tests/test_menu.py`): the menu and the side panel are whole from the smallest window to 4K in both themes and languages, the background pieces never cross the buttons, settings take the full width.
+`python -m pytest -q`: rules, search, features, training, the AI player, the passport and the window (Qt offscreen, no visible windows). `python tools/mutate.py` breaks the code on purpose and checks that the tests catch every break. 288 checks and 69 mutants, all caught. Menu laws (`tests/test_menu.py`): the menu and the side panel are whole from the smallest window to 4K in both themes and languages, the background pieces never cross the buttons, settings take the full width.
 
 ## License
 

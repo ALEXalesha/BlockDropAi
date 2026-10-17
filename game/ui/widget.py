@@ -690,6 +690,7 @@ class GameWidget(QWidget):
         self.game_id = 0
         self.thought = None             # (token, Decision) для «Мыслей ИИ» и подсказки
         self.hint_on = False
+        self.assisted = False           # одиночная с подсказкой или «Мыслями ИИ» - не в рекорды
         self.started = 0.0
         self.seen_pieces = None
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -736,6 +737,9 @@ class GameWidget(QWidget):
             if self.mode == "ai" and self.drivers:
                 self._set_speed(self.drivers[0])
         if key == "show_thoughts":
+            if value and self.mode == "solo" and self.games and not self.finished:
+                self.assisted = True    # «Мысли ИИ» посреди одиночной игры - она не в рекордах
+                self._update_status()
             self.thought = None
             self._update_outlines()
         self.settings_page.sync()
@@ -814,6 +818,8 @@ class GameWidget(QWidget):
         self.finished = False
         self.thought = None
         self.hint_on = False
+        # одиночная с «Мыслями ИИ» с самого начала - не в рекорды (решение автора 17.10)
+        self.assisted = self.mode == "solo" and s["show_thoughts"]
         start = s["start_level"]
         if self.mode == "solo":
             g = B.Game(seed=seed, level=start)
@@ -898,6 +904,9 @@ class GameWidget(QWidget):
     def show_hint(self):
         if self.mode != "solo" or not self.games:
             return
+        if not self.games[0].over:
+            self.assisted = True        # с подсказкой игра не идёт в рекорды (как в Сапёре)
+            self._update_status()
         self.hint_on = True
         self._request_thoughts()
         self.setFocus()
@@ -1005,17 +1014,19 @@ class GameWidget(QWidget):
         elif self.games and self.games[0].over:
             g = self.games[0]
             key = "solo" if self.mode == "solo" else "ai/" + self.level
-            self.records.add(key, g.lines, g.score)
-            if self.mode == "solo":                     # одиночная игра всегда кончается «стаканом»
+            helped = self.mode == "solo" and self.assisted
+            if not helped:                              # с подсказкой или «Мыслями ИИ» - мимо рекордов
+                self.records.add(key, g.lines, g.score)
+            if self.mode == "solo" and not helped:      # одиночная игра всегда кончается «стаканом»
                 self.history.record({"mode": "solo", "level": "solo", "outcome": "loss",
                                      "lines": g.lines, "score": g.score})
             self.ctx.sound.play("loss" if self.mode == "solo" else "draw")
-            self._finish("game_over")
+            self._finish("game_over_assisted" if helped else "game_over")
 
     def _finish(self, text_key):
         self.finished = True
         self.timer.stop()
-        self.play.cols[0].board.banner = self.t(text_key)
+        self.play.cols[0].board.banner = self.t("game_over" if text_key == "game_over_assisted" else text_key)
         self.play.cols[0].board.update()
         self._update_status(text_key)
 
@@ -1032,6 +1043,8 @@ class GameWidget(QWidget):
         self.play.heading.setText(t("ai_name", level=t(self.level)) if self.mode != "solo" else t("app_title"))
         info = {"solo": t("solo_text"), "ai": t("ai_text"),
                 "duel": t("duel_text", pps=DUEL_PPS[self.level])}[self.mode]
+        if self.mode == "solo" and getattr(self, "assisted", False) and not final:
+            info += " " + t("assisted_note")
         self.play.info.setText(info)
         self.play.fit_labels()
 
