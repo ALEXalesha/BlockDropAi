@@ -60,6 +60,14 @@ def selftest(out_path):
         window.resize(1280, 800)
         window.show()
         g = window.game
+        app.processEvents()
+        from aikit.menu import layout_problems
+        if g.current_page() != "menu":
+            raise RuntimeError("окно открылось не меню")
+        bad = layout_problems(g.menu)
+        if bad:
+            raise RuntimeError("меню обрезано: " + "; ".join(bad[:3]))
+        lines.append("меню: открыто первым, раскладка цела")
 
         def spin(cond, limit):
             end = time.time() + limit

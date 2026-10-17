@@ -27,6 +27,8 @@ from game.ui import session as S
 from game.ui.ai_thread import AiWorker, make_agents
 from game.ui.board import COLOR_SETS, BoardView, PiecePanel
 from game.ui.i18n import translator
+from game.ui.menu import MenuPage, board_palette, page_qss, side_qss
+from game.ui.menu import palette as arcade_palette
 from game.version import VERSION
 
 LEVELS = PP.LEVELS
@@ -145,93 +147,6 @@ class Records:
         self.data[key] = e
         save_json(self.path, self.data)
         return e
-
-
-# --- меню ---
-
-
-class MenuPage(QWidget):
-    def __init__(self, gw):
-        super().__init__()
-        self.gw = gw
-        self.setObjectName("page")
-        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        outer = QVBoxLayout(self)
-        outer.addStretch(2)
-        col = QVBoxLayout()
-        col.setSpacing(10)
-        col.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        from PySide6.QtGui import QPixmap
-        from game.ui.icon import render
-        self.logo = QLabel()
-        self.logo.setPixmap(QPixmap.fromImage(render(112)))
-        col.addWidget(self.logo, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.title = label("", "title")
-        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        col.addWidget(self.title)
-        self.sub = label("", "muted", wrap=True)
-        self.sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.sub.setFixedWidth(620)
-        col.addWidget(self.sub, 0, Qt.AlignmentFlag.AlignHCenter)
-        col.addSpacing(12)
-        box = card()
-        box.setMaximumWidth(680)
-        grid = QGridLayout(box)
-        grid.setContentsMargins(22, 18, 22, 18)
-        grid.setHorizontalSpacing(18)
-        grid.setVerticalSpacing(12)
-        self.captions = {}
-        w, self.mode_buttons = segmented({m: "" for m in ("solo", "ai", "duel")}, lambda v: gw.change("mode", v))
-        self._row(grid, 0, "mode", w)
-        w, self.level_buttons = segmented({lv: "" for lv in LEVELS}, lambda v: gw.change("level", v))
-        self._row(grid, 1, "level", w)
-        col.addWidget(box, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.note = label("", "hint", wrap=True)
-        self.note.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.note.setFixedWidth(620)
-        col.addWidget(self.note, 0, Qt.AlignmentFlag.AlignHCenter)
-        col.addSpacing(8)
-        self.play_button = button("", "menuPrimary", lambda: gw.start_game())
-        self.stats_button = button("", "menu", lambda: gw.show_page("stats"))
-        self.settings_button = button("", "menu", lambda: gw.show_page("settings"))
-        for b in (self.play_button, self.stats_button, self.settings_button):
-            col.addWidget(b, 0, Qt.AlignmentFlag.AlignHCenter)
-        outer.addLayout(col)
-        outer.addStretch(3)
-        self.foot = label("", "hint")
-        self.foot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        outer.addWidget(self.foot)
-
-    def _row(self, grid, r, key, widget):
-        cap = label("", "muted")
-        self.captions[key] = cap
-        grid.addWidget(cap, r, 0)
-        grid.addWidget(widget, r, 1)
-
-    def sync(self, s):
-        self.mode_buttons[s["mode"]].setChecked(True)
-        self.level_buttons[s["level"]].setChecked(True)
-        t = self.gw.t
-        text = {"solo": t("solo_text"), "ai": t("ai_text"),
-                "duel": t("duel_text", pps=str(DUEL_PPS[s["level"]]).replace(".", "," if self.gw.ctx.lang == "ru" else "."))}
-        self.note.setText(text[s["mode"]])
-
-    def retranslate(self):
-        t = self.gw.t
-        self.title.setText(t("app_title"))
-        self.sub.setText(t("app_sub"))
-        for key, cap in self.captions.items():
-            cap.setText(t(key))
-        for m, b in self.mode_buttons.items():
-            b.setText(t("mode_" + m))
-        for k, b in self.level_buttons.items():
-            b.setText(t(k))
-        fit_bold(list(self.mode_buttons.values()) + list(self.level_buttons.values()))
-        self.play_button.setText(t("play"))
-        self.stats_button.setText(t("stats"))
-        self.settings_button.setText(t("settings"))
-        self.foot.setText(t("footer", v=VERSION))
-        self.sync(self.gw.settings)
 
 
 # --- поле ---
@@ -627,6 +542,7 @@ class SettingsPage(QWidget):
         top.addWidget(self.menu_button)
         col.addLayout(top)
         box = card()
+        self.box = box                       # на всю ширину страницы, как статистика (закон)
         grid = QGridLayout(box)
         grid.setContentsMargins(20, 16, 20, 16)
         grid.setHorizontalSpacing(18)
@@ -833,8 +749,13 @@ class GameWidget(QWidget):
 
     def apply_theme(self):
         pal = self.ctx.palette()
+        arc = arcade_palette(self.ctx.theme)
+        self.menu.set_theme(self.ctx.theme)
+        # поле, цифры и боковая панель - в стиле меню (автор 17.10: и боковые панели свои)
+        self.play.setStyleSheet(page_qss(arc))
+        self.play.side.setStyleSheet(side_qss(arc))
         for c in self.play.cols:
-            c.set_theme(pal, self.settings["colors"])
+            c.set_theme(board_palette(pal, self.ctx.theme), self.settings["colors"])
             c.board.ghost = self.settings["ghost"]
         self.settings_page.colors.set_arrow_color(pal["text"])
         self.stats.refresh()
@@ -844,7 +765,20 @@ class GameWidget(QWidget):
             p.retranslate()
         self._update_status()
 
+    def menu_note(self, s):
+        t = self.t
+        text = {"solo": t("solo_text"), "ai": t("ai_text"),
+                "duel": t("duel_text", pps=str(DUEL_PPS[s["level"]]).replace(".", "," if self.ctx.lang == "ru" else "."))}
+        return text[s["mode"]]
+
+    def menu_foot(self):
+        best = max((e.get("best_lines", 0) for e in self.records.data.values()), default=0)
+        tail = self.t("menu_best", n=number(best)) if best else self.t("menu_no_best")
+        return self.t("footer", v=VERSION) + " · " + tail
+
     def show_page(self, name):
+        if name == "menu":
+            self.menu.sync(self.settings)
         if name != "play":
             self.stop_game()
         if name == "stats":

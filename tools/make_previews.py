@@ -67,8 +67,10 @@ def main(out):
         ctx.set_theme(theme_name)
         sfx = "" if theme_name == "dark" else "_light"
         g.show_page("menu")
+        g.menu.set_time(6.0)                    # фигуры зала - по обе стороны от кнопок
         spin(app, 0.2)
         shots.append(("preview_menu" + sfx, window.grab()))
+        g.menu.set_time(None)
         # ИИ играет сам, с «Мыслями ИИ»
         g.change("mode", "ai")
         g.change("level", "strong")

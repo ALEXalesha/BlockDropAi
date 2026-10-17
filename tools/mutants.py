@@ -115,3 +115,28 @@ MUTANTS += [
     ("charts: одиночная под паспортом одна", W,
      "        items.append(items.pop([c for c, _ in items].index(self.charts.passport)))", "        pass", TSC + " -k passport_is_last"),
 ]
+
+# стартовое меню, боковая панель в его стиле, настройки на всю ширину (автор 17.10)
+MN = "game/ui/menu.py"
+TM = "tests/test_menu.py"
+WU = "game/ui/widget.py"
+MUTANTS += [
+    ("menu: фигуры на кнопках", MN, "        self.lanes = (m * 0.5, left - gap, left + w + gap, self.width() - m * 0.5)",
+     "        self.lanes = (m * 0.5, left + w, left, self.width() - m * 0.5)", TM + " -k keep_off"),
+    ("menu: фигуры за краем", MN, "            x = z0 + c * 0.25 + lane * (z1 - z0 - c * 4.5)",
+     "            x = z0 + c * 0.25 + lane * (z1 - z0)", TM + " -k keep_off"),
+    ("menu: узкая полоса без фигур не пропускается", MN, "if z[1] - z[0] >= c * 4.5]", "if z[1] - z[0] >= 0]",
+     TM + " -k 'keep_off or narrow'"),
+    ("menu: не растёт на 4K", MN, "        return round(max(1.0, min(2.4, w / 1280, h / 800)), 2)", "        return 1.0",
+     TM + " -k scales"),
+    ("menu: колонка шире окна", MN, "        return round(min(620 * self.scale, max(520, self.width() * 0.6)))",
+     "        return round(620 * self.scale * 1.5)", TM + " -k whole"),
+    # «пилюли уже текста» не мутируется: пилюля жирная и выбранной, и невыбранной, ширину ей даёт
+    # сам Qt по шрифту из таблицы стилей - fit_segments тут лишь запас, мутант был бы равносильным.
+    ("menu: боковая панель общего вида", WU, "        self.play.side.setStyleSheet(side_qss(arc))", "        pass",
+     TM + " -k side_panel"),
+    ("menu: стакан в общих цветах", WU, "            c.set_theme(board_palette(pal, self.ctx.theme), self.settings[\"colors\"])",
+     "            c.set_theme(pal, self.settings[\"colors\"])", TM + " -k side_panel"),
+    ("menu: заголовок не прописными", MN, '        self.title.setText(t("app_title").upper())',
+     '        self.title.setText(t("app_title"))', TM + " -k own_style"),
+]

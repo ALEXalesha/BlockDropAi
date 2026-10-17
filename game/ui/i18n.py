@@ -63,6 +63,7 @@ RU = {
     "act_cw": "Поворот по часовой", "act_ccw": "Поворот против", "act_hold": "Hold", "act_pause": "Пауза",
     "saved_note": "Настройки сохраняются сразу.",
     "footer": "Блоки с ИИ {v} · PySide6 и numpy · MIT",
+    "menu_best": "рекорд {n} линий", "menu_no_best": "рекорда пока нет",
     "seconds": "{n} с", "minutes": "{n} мин", "hours": "{n} ч",
 }
 
@@ -128,6 +129,7 @@ EN = {
     "act_cw": "Rotate clockwise", "act_ccw": "Rotate counter-clockwise", "act_hold": "Hold", "act_pause": "Pause",
     "saved_note": "Settings are saved at once.",
     "footer": "Block Drop AI {v} · PySide6 and numpy · MIT",
+    "menu_best": "record {n} lines", "menu_no_best": "no record yet",
     "seconds": "{n} s", "minutes": "{n} min", "hours": "{n} h",
 }
 
