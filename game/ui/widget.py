@@ -497,6 +497,10 @@ class StatsPage(QWidget):
         self.solo_chart.color_key, self.solo_chart.second_key = "accent", "warn"
         self.solo_chart.stepped = {1}
         self.solo_chart.integer = True
+        # паспорт (на всю ширину) - последним: иначе одиночная игра стояла под ним одна в
+        # половину ширины, а справа было пусто
+        items = self.charts.items
+        items.append(items.pop([c for c, _ in items].index(self.charts.passport)))
         lay.addWidget(self.charts)
         return box
 
@@ -913,6 +917,9 @@ class GameWidget(QWidget):
         self.play.thoughts_box.blockSignals(False)
         self.stack.setCurrentWidget(self.play)
         self._update_status()
+        # число фигур «до такта» - с самого начала: подсказка может прийти раньше первого
+        # такта, а фигура лечь от клавиши до него (тогда смену фигуры такт не увидит)
+        self.seen_pieces = [g.pieces for g in self.games]
         self.timer.start()
         self.setFocus()
 
@@ -1002,7 +1009,7 @@ class GameWidget(QWidget):
             return
         now = time.monotonic()
         # число фигур - с прошлого такта: фигура могла лечь и от нажатия между тактами
-        before = self.seen_pieces or [g.pieces for g in self.games]
+        before = self.seen_pieces
         if self.human:
             self.human.tick(now)
         for d in self.drivers:

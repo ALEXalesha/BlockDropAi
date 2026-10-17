@@ -15,12 +15,13 @@ def labels_intact(app, win, g):
         for lang in ("ru", "en"):
             win.ctx.set_theme(theme)
             win.ctx.set_lang(lang)
-            for width in (1400, win.minimumWidth()):
+            for width in (1400, 3840, win.minimumWidth()):
                 win.resize(width, 820)
                 app.processEvents()
                 for c in all_charts(g.stats):
                     c.grab()
                     assert c.clipped == [], (theme, lang, width, c.title, c.clipped)
+                    assert c.overlaps() == [], (theme, lang, width, c.title, c.overlaps())
                     assert c.theme == theme
     win.ctx.set_theme("dark")
     win.ctx.set_lang("ru")
@@ -84,3 +85,18 @@ def test_charts_from_the_log_and_solo_record(app, win):
     assert g.stats.solo_chart.second == [(1, 500), (2, 2400), (3, 2400)]   # свои номера игр
     assert ch.passport.has_data() and not ch.passport.percent
     labels_intact(app, win, g)
+
+
+def test_solo_chart_sits_in_the_pairs_and_passport_is_last(app, win):
+    """Проверка графиков 17.10: график одиночной игры добавлялся после широкого паспорта и
+    стоял внизу один в половину ширины, справа пусто. Теперь он в паре с очками дуэлей,
+    паспорт - последней строкой на всю ширину."""
+    g = win.game
+    g.show_page("stats")
+    win.resize(1400, 820)
+    app.processEvents()
+    ch, solo = g.stats.charts, g.stats.solo_chart
+    assert ch.charts()[-1] is ch.passport
+    assert solo.y() < ch.passport.y()
+    tops = sorted({c.y() for c in ch.charts() if c is not ch.passport})
+    assert len(tops) == 3                      # 6 карточек парами: три строки, без одинокой

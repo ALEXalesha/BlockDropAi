@@ -134,6 +134,25 @@ def test_hint_shows_best_spot_until_piece_locks(app, win):
     assert wait(app, lambda: board.hint is None, 5)
 
 
+def test_hint_clears_when_piece_locks_before_first_tick(app, win):
+    """Причина мигания теста выше (1 из 3): подсказка пришла раньше первого такта таймера,
+    а фигура легла от клавиши до него. Такт брал «прежнее число фигур» из текущего (уже
+    после падения) - смены фигуры не видел, и подсказка оставалась на поле у следующей
+    фигуры. Здесь таймер остановлен, такт зовётся руками - порядок всегда тот самый."""
+    g = win.game
+    g.change("mode", "solo")
+    g.start_game(seed=8)
+    g.timer.stop()
+    board = g.play.cols[0].board
+    g.show_hint()
+    assert wait(app, lambda: board.hint is not None, 15)
+    pieces = g.games[0].pieces
+    key(g, Qt.Key.Key_Space)
+    assert g.games[0].pieces == pieces + 1
+    g.on_tick()
+    assert board.hint is None and not g.hint_on
+
+
 def test_duel_ai_limited_and_result_recorded(app, win):
     g = win.game
     g.change("mode", "duel")

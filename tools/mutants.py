@@ -98,6 +98,9 @@ MUTANTS += [
      "            self.ready_at = max(self.ready_at, now)", TS),
     ("session: мусор не уходит", SE, "                other.receive_garbage(new)", "                pass", TS),
     ("session: без перепланирования", SE, "                self._plan(now, replan=True)", "                pass", TS),
+    ("ui: подсказка остаётся у следующей фигуры", "game/ui/widget.py",
+     "        self.seen_pieces = [g.pieces for g in self.games]\n        self.timer.start()",
+     "        self.seen_pieces = None\n        self.timer.start()", TU + " -k before_first_tick"),
 ]
 
 # графики статистики (aikit.charts)
@@ -109,4 +112,6 @@ MUTANTS += [
     ("charts: одиночные в доле побед", W, 'enumerate(x for x in games if x.get("mode") == "duel")]', 'enumerate(games)]', TSC),
     ("charts: рекорд одиночной не копится", W, '        c.set_points(gamelog.series(solo, "score"), gamelog.best_curve(solo, "score"))',
      '        c.set_points(gamelog.series(solo, "score"), gamelog.series(solo, "score"))', TSC),
+    ("charts: одиночная под паспортом одна", W,
+     "        items.append(items.pop([c for c, _ in items].index(self.charts.passport)))", "        pass", TSC + " -k passport_is_last"),
 ]
