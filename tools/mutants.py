@@ -107,7 +107,8 @@ MUTANTS += [
 W = "game/ui/widget.py"
 TSC = "tests/test_stats_charts.py"
 MUTANTS += [
-    ("charts: дуэль не в журнале", W, '            self.history.record({"mode": "duel"', '            ({"mode": "duel"', TSC),
+    ("charts: дуэль не в журнале", W, '            self.history.record({"mode": "duel", "level": self.level, "outcome": result,',
+     '            ({"mode": "duel", "level": self.level, "outcome": result,', TSC),
     ("charts: одиночная не в журнале", W, '                self.history.record({"mode": "solo"', '                ({"mode": "solo"', TSC),
     ("charts: одиночные в доле побед", W, 'enumerate(x for x in games if x.get("mode") == "duel")]', 'enumerate(games)]', TSC),
     ("charts: рекорд одиночной не копится", W, '        c.set_points(gamelog.series(solo, "score"), gamelog.best_curve(solo, "score"))',
@@ -119,6 +120,7 @@ MUTANTS += [
 # стартовое меню, боковая панель в его стиле, настройки на всю ширину (автор 17.10)
 MN = "game/ui/menu.py"
 TM = "tests/test_menu.py"
+TP = "tests/test_pages.py"
 WU = "game/ui/widget.py"
 MUTANTS += [
     ("menu: фигуры на кнопках", MN, "        self.lanes = (m * 0.5, left - gap, left + w + gap, self.width() - m * 0.5)",
@@ -153,4 +155,19 @@ MUTANTS += [
     ("assisted: в конце обычная строка", WU, '            self._finish("game_over_assisted" if helped else "game_over")', '            self._finish("game_over")', TUA),
     ("assisted: помощь тянется в следующую игру", WU, '        self.assisted = self.mode == "solo" and s["show_thoughts"]',
      '        self.assisted = self.assisted or (self.mode == "solo" and s["show_thoughts"])', TUA),
+    # 18.10: настройки и статистика в стиле зала (aikit.skin) и находки проверки 17.10
+    ("pages: свёрнутое окно без паузы", W, "        if event.type() == QEvent.Type.ActivationChange and not self.isActiveWindow():\n            self.auto_pause()",
+     "        if event.type() == QEvent.Type.ActivationChange and not self.isActiveWindow():\n            pass", TP + " -k minimize"),
+    ("pages: вкладка оболочки без паузы", W, "        self.auto_pause()\n        self.menu.pause()", "        self.menu.pause()", TP + " -k shell"),
+    ("pages: уход в меню убивает игру", W, "            self.auto_pause()           # игра ждёт на паузе", "            self.stop_game()           # игра ждёт на паузе",
+     TP + " -k continues"),
+    ("pages: брошенная дуэль не поражение", W, '            self.ctx.stats.record("duel/" + self.level, "loss")\n', "", TP + " -k \"abandoned or closing\""),
+    ("pages: дуэль до первой фигуры - поражение", W, "self.duel is not None and self.games[0].pieces > 0:",
+     "self.duel is not None:", TP + " -k before_first"),
+    ("pages: Esc назначается клавишей", W, "            if code == int(Qt.Key.Key_Escape):", "            if False:", TP + " -k capture"),
+    ("pages: узкая дуэль не компактна", W, "        on = both and free / 2 < 420", "        on = False", TP + " -k wells"),
+    ("pages: настройки общим видом", W,
+     '        super().__init__(SKIN, back=lambda: gw.show_page("menu"))\n        self.gw = gw\n        self.menu_button = self.back_button\n        box = SettingsList()',
+     '        super().__init__(None, back=lambda: gw.show_page("menu"))\n        self.gw = gw\n        self.menu_button = self.back_button\n        box = SettingsList()',
+     TP + " -k unlike"),
 ]

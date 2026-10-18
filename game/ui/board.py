@@ -55,7 +55,7 @@ class BoardView(QWidget):
         self.banner = ""
         self.colors = {}            # (x, y) -> вид фигуры, которой клетка была занята
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setMinimumSize(200, 400)
+        self.setMinimumSize(100, 400)          # узкая дуэль: стакан уже, но целиком
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def set_theme(self, palette, scheme):

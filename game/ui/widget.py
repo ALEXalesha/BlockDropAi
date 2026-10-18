@@ -9,7 +9,7 @@ time.monotonic; скорость игры от частоты кадров не 
 import random
 import time
 
-from PySide6.QtCore import QPointF, QRectF, Qt, QTimer
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QKeySequence, QPainter, QPen, QPolygonF
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QFrame, QGridLayout, QHBoxLayout, QHeaderView,
                                QLabel, QScrollArea, QSlider, QStackedWidget, QTableWidget,
@@ -19,7 +19,8 @@ from aikit import settings as st
 from aikit import gamelog, theme
 from aikit.charts import GameCharts, LineChart
 from aikit.storage import load_json, save_json
-from aikit.widgets import Combo, button, card, label, segmented
+from aikit.skin import SettingsList, SkinPage, StatTiles
+from aikit.widgets import Combo, button, card, label, restyle, segmented
 from game.ai import player as P
 from game.core import blocks as B
 from game.train import passport as PP
@@ -29,6 +30,7 @@ from game.ui.board import COLOR_SETS, BoardView, PiecePanel
 from game.ui.i18n import translator
 from game.ui.menu import MenuPage, board_palette, page_qss, side_qss
 from game.ui.menu import palette as arcade_palette
+from game.ui.skin import SKIN
 from game.version import VERSION
 
 LEVELS = PP.LEVELS
@@ -153,16 +155,21 @@ class Records:
 
 
 class BoardColumn(QWidget):
-    """Одно поле с hold слева, очередью справа и цифрами снизу."""
+    """Одно поле с hold слева, очередью справа и цифрами снизу; имя - над всем полем (в узкой
+    дуэли имя «ИИ: Средний» в левой колонке обрезалось и раздвигало её - проверка 17.10)."""
 
     def __init__(self):
         super().__init__()
-        row = QHBoxLayout(self)
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(10)
-        left = QVBoxLayout()
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(4)
         self.name = label("", "section")
-        left.addWidget(self.name)
+        outer.addWidget(self.name)
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        self.row = row
+        outer.addLayout(row, 1)
+        left = QVBoxLayout()
         self.hold_caption = label("", "muted")
         left.addWidget(self.hold_caption)
         self.hold = PiecePanel(1)
@@ -188,6 +195,20 @@ class BoardColumn(QWidget):
         right.addWidget(self.next)
         right.addStretch(1)
         row.addLayout(right)
+        self.compact = False
+
+    def set_compact(self, on):
+        """Узкая колонка (дуэль в окне 900x700): hold и очередь уже, цифры мельче - стакан
+        целиком в колонке (проверка 17.10: правый край обоих стаканов срезан)."""
+        if on == self.compact:
+            return
+        self.compact = on
+        k = 0.66 if on else 1.0
+        self.hold.setFixedSize(round(96 * k), round(70 * k))
+        self.next.setFixedSize(round(96 * k), round(62 * k) * B.PREVIEW)
+        self.row.setSpacing(6 if on else 10)
+        for _, val in self.numbers.values():
+            restyle(val, "bigNumberSmall" if on else "bigNumber")
 
     def retranslate(self, t):
         self.hold_caption.setText(t("hold"))
@@ -266,7 +287,16 @@ class PlayPage(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        self.fit_compact()
         self.fit_labels()
+
+    def fit_compact(self):
+        """Две колонки и боковая панель не помещаются - колонки компактные."""
+        both = all(not c.isHidden() for c in self.cols)
+        free = self.width() - 28 - 14 * 2 - self.side.width()
+        on = both and free / 2 < 420
+        for c in self.cols:
+            c.set_compact(on)
 
     def retranslate(self):
         t = self.gw.t
@@ -357,28 +387,17 @@ class Evolution(QWidget):
         p.end()
 
 
-class StatsPage(QWidget):
+class StatsPage(SkinPage):
+    """Статистика в стиле «неонового зала» (aikit.skin, game/ui/skin.py): пол зала на фоне,
+    экраны автоматов с неоновой рамкой, плитки с крупными числами."""
+
     def __init__(self, gw):
-        super().__init__()
+        super().__init__(SKIN, back=lambda: gw.show_page("menu"))
         self.gw = gw
-        outer = QVBoxLayout(self)
-        outer.setContentsMargins(0, 0, 0, 0)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        outer.addWidget(scroll)
-        body = page_widget()
-        scroll.setWidget(body)
-        col = QVBoxLayout(body)
-        col.setContentsMargins(26, 22, 26, 22)
-        col.setSpacing(14)
-        top = QHBoxLayout()
-        self.heading = label("", "heading")
-        top.addWidget(self.heading)
-        top.addStretch(1)
-        self.menu_button = button("", None, lambda: gw.show_page("menu"))
-        top.addWidget(self.menu_button)
-        col.addLayout(top)
+        self.menu_button = self.back_button
+        col = self.col
+        self.tiles = StatTiles(4, min_tile=170)
+        col.addWidget(self.tiles)
         self.sections = {}
         for key in ("your_records", "ai_records", "passport", "hard", "duels", "evolution"):
             box = card()
@@ -395,6 +414,18 @@ class StatsPage(QWidget):
             if key == "your_records":
                 col.addWidget(self._charts_card())
         col.addStretch(1)
+
+    def refresh_tiles(self):
+        gw, t = self.gw, self.gw.t
+        solo = gw.records.entry("solo")
+        duels = [gw.ctx.stats.entry("duel/" + lv) for lv in LEVELS]
+        played = sum(e["games"] for e in duels)
+        won = sum(e["wins"] for e in duels)
+        self.tiles.set_tile(0, number(solo["best_lines"]), t("tile_lines"), t("tile_lines_note", n=solo["games"]))
+        self.tiles.set_tile(1, number(solo["best_score"]), t("tile_score"))
+        self.tiles.set_tile(2, played, t("tile_duels"), t("tile_duel_wins", n=won) if played else "")
+        self.tiles.set_tile(3, max((e["best_streak"] for e in duels), default=0), t("tile_streak"))
+        self.set_tag(t("tag_stats"))
 
     def _charts_card(self):
         """Графики (правило автора 10.10 - графики в статистике всех игр с ИИ): дуэли против ИИ -
@@ -450,6 +481,7 @@ class StatsPage(QWidget):
 
     def refresh(self):
         gw, t = self.gw, self.gw.t
+        self.refresh_tiles()
         self.refresh_charts()
         title, text, tw = self.sections["your_records"]
         title.setText(t("your_records"))
@@ -519,50 +551,27 @@ class StatsPage(QWidget):
 # --- настройки ---
 
 
-class SettingsPage(QWidget):
+class SettingsPage(SkinPage):
+    """Настройки в стиле «неонового зала»: экраны автоматов на всю ширину (как статистика; автор
+    17.10), группы - вид и звук, игра, клавиши."""
+
     def __init__(self, gw):
-        super().__init__()
+        super().__init__(SKIN, back=lambda: gw.show_page("menu"))
         self.gw = gw
-        outer = QVBoxLayout(self)
-        outer.setContentsMargins(0, 0, 0, 0)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        outer.addWidget(scroll)
-        body = page_widget()
-        scroll.setWidget(body)
-        col = QVBoxLayout(body)
-        col.setContentsMargins(26, 22, 26, 22)
-        col.setSpacing(14)
-        top = QHBoxLayout()
-        self.heading = label("", "heading")
-        top.addWidget(self.heading)
-        top.addStretch(1)
-        self.menu_button = button("", None, lambda: gw.show_page("menu"))
-        top.addWidget(self.menu_button)
-        col.addLayout(top)
-        box = card()
+        self.menu_button = self.back_button
+        box = SettingsList()
         self.box = box                       # на всю ширину страницы, как статистика (закон)
-        grid = QGridLayout(box)
-        grid.setContentsMargins(20, 16, 20, 16)
-        grid.setHorizontalSpacing(18)
-        grid.setVerticalSpacing(12)
         self.caps = {}
-        r = 0
 
         def row(key, widget, hint=False):
-            nonlocal r
-            cap = label("", "muted")
-            self.caps[key] = cap
-            grid.addWidget(cap, r, 0)
-            grid.addWidget(widget, r, 1)
-            r += 1
+            title, h = box.add(key, widget)
+            self.caps[key] = title
             if hint:
-                h = label("", "hint", wrap=True)
                 self.caps[key + "_hint"] = h
-                grid.addWidget(h, r, 1)
-                r += 1
+            else:
+                h.hide()
 
+        box.group("")
         w, self.theme_buttons = segmented({"dark": "", "light": ""}, gw.ctx.set_theme)
         row("theme", w)
         w, self.lang_buttons = segmented({"ru": "Русский", "en": "English"}, gw.ctx.set_lang)
@@ -570,6 +579,9 @@ class SettingsPage(QWidget):
         self.colors = Combo()
         self.colors.currentIndexChanged.connect(self._colors_changed)
         row("colors", self.colors)
+        self.volume = self._slider(0, 100, gw.ctx.set_volume)
+        row("volume", self.volume)
+        box.group("")
         self.das = self._slider(40, 400, lambda v: gw.change("das_ms", v))
         row("das", self.das, hint=True)
         self.arr = self._slider(0, 120, lambda v: gw.change("arr_ms", v))
@@ -580,9 +592,7 @@ class SettingsPage(QWidget):
         self.ghost.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.ghost.toggled.connect(lambda on: gw.change("ghost", on))
         row("ghost", self.ghost)
-        self.volume = self._slider(0, 100, gw.ctx.set_volume)
-        row("volume", self.volume)
-        col.addWidget(box)
+        self.col.addWidget(box)
         keys = card()
         kl = QGridLayout(keys)
         kl.setContentsMargins(20, 16, 20, 16)
@@ -602,10 +612,10 @@ class SettingsPage(QWidget):
             kl.addWidget(b, 2 + i, 1)
             self.key_caps[act] = cap
             self.key_buttons[act] = b
-        col.addWidget(keys)
+        self.col.addWidget(keys)
         self.note = label("", "hint")
-        col.addWidget(self.note)
-        col.addStretch(1)
+        self.col.addWidget(self.note)
+        self.col.addStretch(1)
 
     @staticmethod
     def _slider(lo, hi, slot):
@@ -645,6 +655,9 @@ class SettingsPage(QWidget):
         t = self.gw.t
         self.heading.setText(t("settings_title"))
         self.menu_button.setText(t("menu"))
+        self.set_tag(t("tag_settings"))
+        self.box.set_group(0, t("group_view"))
+        self.box.set_group(1, t("group_game"))
         for key in ("theme", "language", "colors", "das", "arr", "start_level", "ghost", "volume"):
             self.caps[key].setText(t(key))
         self.theme_buttons["dark"].setText(t("dark"))
@@ -761,7 +774,9 @@ class GameWidget(QWidget):
         for c in self.play.cols:
             c.set_theme(board_palette(pal, self.ctx.theme), self.settings["colors"])
             c.board.ghost = self.settings["ghost"]
-        self.settings_page.colors.set_arrow_color(pal["text"])
+        # настройки и статистика - в стиле «неонового зала» (aikit.skin; автор 17.10)
+        self.stats.set_theme(self.ctx.theme)
+        self.settings_page.set_theme(self.ctx.theme)
         self.stats.refresh()
 
     def retranslate(self):
@@ -780,11 +795,57 @@ class GameWidget(QWidget):
         tail = self.t("menu_best", n=number(best)) if best else self.t("menu_no_best")
         return self.t("footer", v=VERSION) + " · " + tail
 
+    def in_progress(self):
+        """Игра на поле начата и не кончена (её можно продолжить из меню)."""
+        return bool(self.games) and not self.finished
+
+    def menu_play(self):
+        """Главная кнопка меню: начатая игра - вернуться в неё (на паузе), иначе новая."""
+        if self.in_progress():
+            self.stack.setCurrentWidget(self.play)
+            self.setFocus()
+        else:
+            self.start_game()
+
+    def auto_pause(self):
+        """Игра встаёт на паузу сама: ушли в меню, свернули окно, переключились на другое окно
+        или вкладку оболочки (проверка 17.10: свёрнутая игра шла дальше и кончалась)."""
+        if self.in_progress() and not self.paused:
+            self.toggle_pause()
+
+    def abandon(self):
+        """Брошенная дуэль (новая игра, закрытие окна) после первой вашей фигуры - поражение, как в
+        Дураке и КНБ; одиночная игра - просто кончается без рекорда."""
+        if self.in_progress() and self.duel is not None and self.games[0].pieces > 0:
+            self.ctx.stats.record("duel/" + self.level, "loss")
+            me = self.games[0]
+            self.history.record({"mode": "duel", "level": self.level, "outcome": "loss",
+                                 "lines": me.lines, "score": me.score, "abandoned": 1})
+        self.finished = True
+
+    def pause(self):
+        """Вкладку оболочки скрыли: игра на паузе, фон меню стоит."""
+        self.auto_pause()
+        self.menu.pause()
+        self.timer.stop()
+
+    def resume(self):
+        self.menu.resume()
+        if self.in_progress():
+            self.timer.start()          # игра ждёт на паузе - «Продолжить» нажимает человек
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.ActivationChange and not self.isActiveWindow():
+            self.auto_pause()
+        elif event.type() == QEvent.Type.WindowStateChange and self.window().isMinimized():
+            self.auto_pause()
+        super().changeEvent(event)
+
     def show_page(self, name):
         if name == "menu":
             self.menu.sync(self.settings)
         if name != "play":
-            self.stop_game()
+            self.auto_pause()           # игра ждёт на паузе - «Продолжить» в меню
         if name == "stats":
             self.stats.refresh()
         if name == "settings":
@@ -807,6 +868,7 @@ class GameWidget(QWidget):
         self.game_id += 1
 
     def start_game(self, seed=None):
+        self.abandon()
         self.stop_game()
         s = self.settings
         self.mode = s["mode"]
@@ -1058,6 +1120,11 @@ class GameWidget(QWidget):
     def keyPressEvent(self, event):
         code = int(event.key())
         if self.capturing:
+            if code == int(Qt.Key.Key_Escape):
+                # Esc - отмена назначения (проверка 17.10: назначал Esc и менял местами с паузой)
+                self.capturing = None
+                self.settings_page.sync()
+                return
             if code != int(Qt.Key.Key_unknown):
                 keys = dict(self.settings["keys"])
                 old = keys[self.capturing]
@@ -1090,7 +1157,8 @@ class GameWidget(QWidget):
     # --- закрытие ---
 
     def shutdown(self):
-        """Остановить таймер и поток ИИ за 2 секунды (контракт aikit)."""
+        """Остановить таймер и поток ИИ за 2 секунды (контракт aikit). Начатая дуэль - поражение."""
+        self.abandon()
         self.stop_game()
         return self.worker.shutdown(2.0)
 

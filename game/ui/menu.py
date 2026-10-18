@@ -58,6 +58,33 @@ def rain(seed=7, count=18):
             for _ in range(count)]
 
 
+def paint_floor(p, w, h, t, pal):
+    """Неоновый пол в перспективе и горизонт (фон меню и страниц)."""
+    top = h * 0.70
+    glow = QLinearGradient(0, top - h * 0.12, 0, top)
+    hz = QColor(pal["horizon"])
+    hz.setAlpha(0)
+    glow.setColorAt(0, hz)
+    hz.setAlpha(90)
+    glow.setColorAt(1, hz)
+    p.fillRect(QRectF(0, top - h * 0.12, w, h * 0.12), glow)
+    line = QColor(pal["floor"])
+    cx = w / 2
+    for k in range(-14, 15):
+        line.setAlpha(110)
+        p.setPen(QPen(line, 1.6))
+        p.drawLine(QPointF(cx + k * w * 0.02, top), QPointF(cx + k * w * 0.16, h))
+    phase = (t * 0.6) % 1.0
+    for k in range(12):
+        f = ((k + phase) / 12.0) ** 2.2           # ближе к зрителю - реже
+        y = top + (h - top) * f
+        line.setAlpha(round(40 + 150 * f))
+        p.setPen(QPen(line, 1.0 + 2.0 * f))
+        p.drawLine(QPointF(0, y), QPointF(w, y))
+    p.setPen(QPen(QColor(pal["horizon"]), 2.0))
+    p.drawLine(QPointF(0, top), QPointF(w, top))
+
+
 class Arcade(Backdrop):
     """Фон: неоновый пол в перспективе и фигуры, падающие по бокам от середины."""
 
@@ -113,29 +140,7 @@ class Arcade(Backdrop):
                 p.drawRoundedRect(QRectF(r.x() + 2, r.y() + 2, r.width() - 4, r.height() * 0.3), 2, 2)
 
     def _floor(self, p, w, h, t, pal):
-        top = h * 0.70
-        glow = QLinearGradient(0, top - h * 0.12, 0, top)
-        hz = QColor(pal["horizon"])
-        hz.setAlpha(0)
-        glow.setColorAt(0, hz)
-        hz.setAlpha(90)
-        glow.setColorAt(1, hz)
-        p.fillRect(QRectF(0, top - h * 0.12, w, h * 0.12), glow)
-        line = QColor(pal["floor"])
-        cx = w / 2
-        for k in range(-14, 15):
-            line.setAlpha(110)
-            p.setPen(QPen(line, 1.6))
-            p.drawLine(QPointF(cx + k * w * 0.02, top), QPointF(cx + k * w * 0.16, h))
-        phase = (t * 0.6) % 1.0
-        for k in range(12):
-            f = ((k + phase) / 12.0) ** 2.2           # ближе к зрителю - реже
-            y = top + (h - top) * f
-            line.setAlpha(round(40 + 150 * f))
-            p.setPen(QPen(line, 1.0 + 2.0 * f))
-            p.drawLine(QPointF(0, y), QPointF(w, y))
-        p.setPen(QPen(QColor(pal["horizon"]), 2.0))
-        p.drawLine(QPointF(0, top), QPointF(w, top))
+        paint_floor(p, w, h, t, pal)
 
 
 class BlockTitle(Title):
@@ -211,6 +216,7 @@ QLabel#section {{ font-family: "Segoe UI"; font-weight: 900; font-size: 17px; co
 QLabel#muted {{ font-family: "Trebuchet MS", "Segoe UI"; color: {pal['muted']}; }}
 QLabel#hint {{ font-family: "Trebuchet MS", "Segoe UI"; font-size: 12px; color: {pal['muted']}; }}
 QLabel#bigNumber {{ font-family: "Consolas"; font-size: 26px; font-weight: 700; color: {pal['neon2']}; }}
+QLabel#bigNumberSmall {{ font-family: "Consolas"; font-size: 17px; font-weight: 700; color: {pal['neon2']}; }}
 """
 
 
@@ -267,11 +273,14 @@ class MenuPage(Arcade):
         self.note.setAlignment(Qt.AlignmentFlag.AlignCenter)
         col.addWidget(self.note)
         self.row = QHBoxLayout()
-        self.play_button = button("", "menuPrimary", lambda: gw.start_game())
+        self.play_button = button("", "menuPrimary", lambda: gw.menu_play())
+        self.new_button = button("", "arcadeB", lambda: gw.start_game())     # при начатой игре
         self.stats_button = button("", "arcadeB", lambda: gw.show_page("stats"))
         self.settings_button = button("", None, lambda: gw.show_page("settings"))
         self.buttons = (self.play_button, self.stats_button, self.settings_button)
         col.addWidget(self.play_button)
+        col.addWidget(self.new_button)
+        self.new_button.hide()
         self.row.addWidget(self.stats_button, 1)
         self.row.addWidget(self.settings_button, 1)
         col.addLayout(self.row)
@@ -317,7 +326,7 @@ class MenuPage(Arcade):
 
     def _fit(self):
         w = self.column_width()
-        for x in (self.title, self.sub, self.cabinet, self.note, self.foot, self.play_button):
+        for x in (self.title, self.sub, self.cabinet, self.note, self.foot, self.play_button, self.new_button):
             x.setFixedWidth(w)
         m = self.root.contentsMargins().left()
         left = (self.width() - w) / 2
@@ -348,12 +357,18 @@ class MenuPage(Arcade):
         for k, b in self.level_buttons.items():
             b.setText(t(k))
         self.play_button.setText(t("play"))
+        self.new_button.setText(t("new_game"))
         self.stats_button.setText(t("stats"))
         self.settings_button.setText(t("settings"))
         self.apply_scale(force=True)
         self.sync(self.gw.settings)
 
     def sync(self, s):
+        # начатая игра ждёт на паузе: «Продолжить» и «Новая игра» (проверка 17.10: уход в меню
+        # убивал игру, брошенная дуэль не считалась)
+        going = self.gw.in_progress() if hasattr(self.gw, "games") else False
+        self.play_button.setText(self.gw.t("continue") if going else self.gw.t("play"))
+        self.new_button.setVisible(going)
         self.mode_buttons[s["mode"]].setChecked(True)
         self.level_buttons[s["level"]].setChecked(True)
         self.note.setText(self.gw.menu_note(s))
