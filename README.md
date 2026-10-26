@@ -29,7 +29,7 @@ Python, PySide6 and numpy. No pygame, no PyTorch.
 - 7 pieces from a "bag of 7": every 7 pieces in a row are all different, in random order.
 - SRS rotation with wall kicks, both directions. The kick tables are computed from the SRS offset data and checked against the standard tables in the tests (including a T-spin triple that needs the fifth kick).
 - Soft and hard drop, a 0.5 s lock delay that movement can postpone 15 times, hold once per piece.
-- 100 / 300 / 500 / 800 points for 1–4 lines, times the level; the level and speed rise every 10 lines.
+- 100 / 300 / 500 / 800 points for 1-4 lines, times the level; the level and speed rise every 10 lines.
 - Game time comes from the clock, not from the frame rate: the same seconds give the same game at 30 or 144 frames per second.
 
 ## How the AI plays
