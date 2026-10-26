@@ -6,7 +6,9 @@
 
 [English version](README.md)
 
-[![Лицензия](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Status](https://img.shields.io/badge/status-stable-brightgreen)](#) [![Release](https://img.shields.io/github/v/release/ALEXalesha/BlockDropAi)](https://github.com/ALEXalesha/BlockDropAi/releases/latest) [![CI](https://github.com/ALEXalesha/BlockDropAi/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXalesha/BlockDropAi/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![PySide6](https://img.shields.io/badge/PySide6-41CD52?logo=qt&logoColor=white)](https://doc.qt.io/qtforpython-6/) [![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
+
+Код, тесты и документация этого проекта написаны Claude (Anthropic) в Claude Code. Идеи, проверка и решения - Алексей.
 
 <img src="docs/preview_ai.png" width="880" alt="Играет сильный ИИ, включены «Мысли ИИ»: контуры трёх лучших мест для фигуры">
 
@@ -27,7 +29,7 @@ Python, PySide6 и numpy. Без pygame и без PyTorch.
 - 7 фигур из «мешка из 7»: каждые 7 фигур подряд - все разные, порядок случайный.
 - Вращение SRS со сдвигами от стен в обе стороны. Таблицы сдвигов считаются из таблиц смещений SRS и в тестах сверяются со стандартными (в том числе T-spin triple, которому нужен пятый сдвиг).
 - Мягкое и жёсткое падение, задержка фиксации 0,5 с, которую движение может отложить 15 раз, hold один раз за фигуру.
-- 100 / 300 / 500 / 800 очков за 1–4 линии, умноженные на уровень; уровень и скорость растут каждые 10 линий.
+- 100 / 300 / 500 / 800 очков за 1-4 линии, умноженные на уровень; уровень и скорость растут каждые 10 линий.
 - Время игры - от часов, а не от частоты кадров: те же секунды дают ту же партию при 30 и при 144 кадрах в секунду.
 
 ## Как играет ИИ

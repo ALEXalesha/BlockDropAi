@@ -6,7 +6,9 @@
 
 [Русская версия](README.ru.md)
 
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Status](https://img.shields.io/badge/status-stable-brightgreen)](#) [![Release](https://img.shields.io/github/v/release/ALEXalesha/BlockDropAi)](https://github.com/ALEXalesha/BlockDropAi/releases/latest) [![CI](https://github.com/ALEXalesha/BlockDropAi/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXalesha/BlockDropAi/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![PySide6](https://img.shields.io/badge/PySide6-41CD52?logo=qt&logoColor=white)](https://doc.qt.io/qtforpython-6/) [![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
+
+Code, tests and docs are written by Claude (Anthropic) in Claude Code. Ideas, testing and decisions - Alexey.
 
 <img src="docs/preview_ai.png" width="880" alt="The strong AI playing, with AI thoughts: outlines of its three best spots for the piece">
 
@@ -27,7 +29,7 @@ Python, PySide6 and numpy. No pygame, no PyTorch.
 - 7 pieces from a "bag of 7": every 7 pieces in a row are all different, in random order.
 - SRS rotation with wall kicks, both directions. The kick tables are computed from the SRS offset data and checked against the standard tables in the tests (including a T-spin triple that needs the fifth kick).
 - Soft and hard drop, a 0.5 s lock delay that movement can postpone 15 times, hold once per piece.
-- 100 / 300 / 500 / 800 points for 1–4 lines, times the level; the level and speed rise every 10 lines.
+- 100 / 300 / 500 / 800 points for 1-4 lines, times the level; the level and speed rise every 10 lines.
 - Game time comes from the clock, not from the frame rate: the same seconds give the same game at 30 or 144 frames per second.
 
 ## How the AI plays
